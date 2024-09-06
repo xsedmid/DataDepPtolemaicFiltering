@@ -5,7 +5,7 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 
 * Clone the three Java-based projects (VMFSMetricSpace, VMGenericTools, VMMetricSpaceTechniquesImpl)
 * If you want to also test datasets of image embeddings and not only the artificial vectors (synthetical data), download the folder '[Similarity_search](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search.zip)' (~24 GB) and store it locally on your system
-* Change the path in method ```vm.fs.FSGlobal/initRoot()``` (project VMFSMetricSpace) to provide the path to the downloaded 'Similarity_search' folder
+* Change the path in method ```vm.fs.FSGlobal/initRoot()``` (project VMFSMetricSpace) to provide the path to the downloaded 'Similarity_search' folder. If interested only in synthetical data, create somewhere an empty folder Similarity_search and update ```vm.fs.FSGlobal/initRoot()``` to provide it.
 
 ### Reproducibility Steps -- Synthetical Data
 
