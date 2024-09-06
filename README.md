@@ -9,7 +9,7 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 
 ### Reproducibility Steps -- Synthetical Data
 
-* Set up the main Java class in ```vm.fs.papers.impl.main.vldb2024.VLDB24DataDepPtolemaicFiltering``` (project VMFSMetricSpace) based on a given experiment configuration (see 3 types of reproducibility steps below)
+* Set up the main Java class in ```vm.fs.papers.impl.main.vldb2024.VLDB24DataDepPtolemaicFiltering``` (project VMFSMetricSpace).
 * By running the main Java class in ```vm.fs.papers.impl.main.vldb2024.VLDB24DataDepPtolemaicFiltering``` (project VMFSMetricSpace), vectors of uniformly distributed numbers are generated, filtering techniques are learned, the learned techniques are evaluated, and plots are generated from the evaluated results.
 * The class produces results that are consistent with the article. pdf files with the plots are stored in the folder Similarity_search/Plots/VLDB24_DataDepPtolemaicFilering/
 * Results of the search in .gz format and the csv file with statistics are stored in respective folders in Similarity_search/Result/ ... The statistics are stored in the folder Processed_stats
