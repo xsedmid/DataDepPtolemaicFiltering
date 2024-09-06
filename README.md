@@ -39,4 +39,4 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 ## Key-value Storages
 Due to the limited size of main memory, the following key-value storages manage the content (coordinates) of dataset vectors within secondary storage, while IDs of objects are kept in main memory.
 * Key-value storage of 102M CLIP vectors reduced by PCA to 256-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/MV_storage/laion2B-en-clip768v2-n=100M.h5_PCA256) (~103 GB)
-* Key-value storage of 100M DeCAF 4,096-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/MV_storage/decaf_100m) (~770 GB)
+* Key-value storage of 96M Yahoo 4,096-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/MV_storage/decaf_100m) (~770 GB)
