@@ -27,7 +27,7 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 * If not downloaded yet, download the corresponding datasets and key-value storages from the previous section
 * Set up the main Java class ```vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain``` (project VMFSMetricSpace) by selecting the datasets to be tested. The instances of datasets tested in the article are: 
   * new FSDatasetInstanceSingularizator.Faiss_Clip_100M_PCA256_Candidates()
-  * new FSDatasetInstanceSingularizator.Faiss_DeCAF_100M_Candidates()
+  * new FSDatasetInstanceSingularizator.Faiss_DeCAF_100M_Candidates()       (... corresponds to the Yahoo_96M dataset)
 * Define these datasets in the main class ```vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain``` and run it.
   
 ## Datasets
