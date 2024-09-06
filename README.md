@@ -6,12 +6,11 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 * Clone the three Java-based projects (VMFSMetricSpace, VMGenericTools, VMMetricSpaceTechniquesImpl)
 * If you want to also test datasets of image embeddings and not only the artificial vectors, download the folder '[Similarity_search](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search.zip)' (~24 GB) and store it locally on your system
 * Change the path in method ```vm.fs.FSGlobal/initRoot()``` (project VMFSMetricSpace) to provide the path to the downloaded 'Similarity_search' folder
-* Set up the main Java class in ```vm.fs.papers.impl.main.vldb2024.VLDB24DataDepPtolemaicFiltering``` (project VMFSMetricSpace) based on a given experiment configuration (see 3 types of reproducibility steps below)
-* By running the main Java class in ```vm.fs.papers.impl.main.vldb2024.VLDB24DataDepPtolemaicFiltering``` (project VMFSMetricSpace), vectors of uniformly distributed numbers are generated, filtering techniques are learned, the learned techniques are evaluated, and plots are generated from the evaluated results.
 
 ### Reproducibility Steps -- Synthetical Data
 
-* Run the main Java class in ```vm.fs.papers.impl.main.vldb2024.VLDB24DataDepPtolemaicFiltering``` (project VMFSMetricSpace)
+* Set up the main Java class in ```vm.fs.papers.impl.main.vldb2024.VLDB24DataDepPtolemaicFiltering``` (project VMFSMetricSpace) based on a given experiment configuration (see 3 types of reproducibility steps below)
+* By running the main Java class in ```vm.fs.papers.impl.main.vldb2024.VLDB24DataDepPtolemaicFiltering``` (project VMFSMetricSpace), vectors of uniformly distributed numbers are generated, filtering techniques are learned, the learned techniques are evaluated, and plots are generated from the evaluated results.
 * The class produces results that are consistent with the article. pdf files with the plots are stored in the folder Similarity_search/Plots/VLDB24_DataDepPtolemaicFilering/
 * Results of the search in .gz format and the csv file with statistics are stored in respective folders in Similarity_search/Result/ ... The statistics are stored in the folder Processed_stats
 
