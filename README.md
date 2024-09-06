@@ -22,7 +22,7 @@ The objective of this repository is to reproduce the experiments of the "Data-De
   * new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset()
 * Define these datasets in the main class ```vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain``` and run it.
 
-### Reproducibility Steps -- CLIP / DeCAF Datasets (Query Candidates Identified by FAISS)
+### Reproducibility Steps -- CLIP / Yahoo Datasets (Query Candidates Identified by FAISS)
 
 * If not downloaded yet, download the corresponding datasets and key-value storages from the previous section
 * Set up the main Java class ```vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain``` (project VMFSMetricSpace) by selecting the datasets to be tested. The instances of datasets tested in the article are: 
