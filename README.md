@@ -9,6 +9,8 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 
 ### Reproducibility Steps -- Synthetical Data
 
+* Simplest solution: run file VMFSMetricSpace\target\VMFSMetricSpace-1.0-jar-with-dependencies.jar
+* Run with settings:
 * Set up the main Java class in ```vm.fs.papers.impl.main.icde2025.DataDepPtolemaicFiltering.ICDE25DataDepPtolemaicFiltering``` (project VMFSMetricSpace).
 * By running the main Java class in ```vm.fs.papers.impl.main.icde2025.DataDepPtolemaicFiltering.ICDE25DataDepPtolemaicFiltering``` (project VMFSMetricSpace), vectors of uniformly distributed numbers are generated, filtering techniques are learned, the learned techniques are evaluated, and plots are generated from the evaluated results.
 * The class produces results that are consistent with the article. pdf files with the plots are stored in the folder Similarity_search/Plots/ICDE25_DataDepPtolemaicFilering/
