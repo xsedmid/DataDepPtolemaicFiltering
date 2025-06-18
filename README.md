@@ -16,11 +16,14 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 
 ### Reproducibility Steps -- PKU-MMD / DeCAF Datasets
 
+* We recommend to first run the demo with the random vectors that creates the structure of folders in the Similarity_search folder (defined in the FSGlobal class).
 * Download the corresponding datasets you would like to evaluate (see the download links below)
-* Set up the main Java class ```vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain``` (project VMFSMetricSpace) by selecting the datasets to be tested. The instances of datasets tested in the article are: 
-  * new FSDatasetInstanceSingularizator.DeCAFDataset()
-  * new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset()
-* Define these datasets in the main class ```vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain``` and run it.
+* Store the files to proper folders: Similarity_search\Dataset\Dataset\; Similarity_search\Dataset\Pivot\ Similarity_search\Dataset\Query\
+* Set up and run the main Java class ```vm.fs.main.datatools.FSPrepareNewDatasetForPivotFilterings``` (project VMFSMetricSpace) by selecting the datasets to be tested. The instances of datasets tested in the article are: 
+  * new FSDatasetInstances.DeCAFDataset()
+  * new FSDatasetInstances.MOCAP10FPS()
+  * new FSDatasetInstances.MOCAP30FPS()
+* Set up and run the main Java class ```vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain``` (project VMFSMetricSpace) by selecting the datasets to be tested.
 
 <!--
 ### Reproducibility Steps -- CLIP / Yahoo Datasets (Query Candidates Identified by FAISS)
@@ -34,7 +37,10 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 ## Datasets
 <!--* 10M CLIP vectors reduced by PCA to 256-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/laion2B-en-clip768v2-n=10M.h5_PCA256.gz) (~13 GB)
 * 102M CLIP vectors reduced by PCA to 256-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/laion2B-en-clip768v2-n=100M.h5_PCA256.gz) (~128 GB)--> 
-* 1M DeCAF 4,096-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/decaf_1m.gz) (~7 GB)
+* 1M DeCAF 4,096-D vectors: Dataset: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/decaf_1m.gz) (~7 GB)
+* 1M DeCAF 4,096-D vectors: Queries: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Query/decaf_1m.gz) (~7 GB)
+* 1M DeCAF 4,096-D vectors: Pivots: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Pivot/decaf_1m.gz) (~7 GB)
+
 * 17K PKU-MMD_10fps MoCAP data: please reach out to us at v.mic11111@gmail.com. The data cannot be provided online due to copyright.
 * 17K PKU-MMD_30fps MoCAP data: please reach out to us at v.mic11111@gmail.com. The data cannot be provided online due to copyright.
 <!--* 96M Yahoo 4,096-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/decaf_100m.gz) (~559 GB)--> 
