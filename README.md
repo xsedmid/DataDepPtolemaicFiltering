@@ -4,7 +4,7 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 ## Reproducibility Steps
 
 * Clone the three Java-based projects (VMFSMetricSpace, VMGenericTools, VMMetricSpaceTechniquesImpl)
-* Change the path in method ```vm.fs.FSGlobal/initRoot()``` (project VMFSMetricSpace) to provide the path to the empty folder 'Similarity_search' folder.
+* Change the path in method ```vm.fs.FSGlobal/initRoot()``` (project VMFSMetricSpace) to provide the path to the folder 'Similarity_search'.
 <!--* If interested only in synthetical data, create somewhere an empty folder Similarity_search and update ```vm.fs.FSGlobal/initRoot()``` to provide it. If you want to also test datasets of image embeddings and not only the artificial vectors (synthetical data), download the folder '[Similarity_search](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search.zip)' (~24 GB) and store it locally on your system -->
 
 ### Reproducibility Steps -- Synthetical Data
@@ -38,8 +38,8 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 <!--* 10M CLIP vectors reduced by PCA to 256-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/laion2B-en-clip768v2-n=10M.h5_PCA256.gz) (~13 GB)
 * 102M CLIP vectors reduced by PCA to 256-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/laion2B-en-clip768v2-n=100M.h5_PCA256.gz) (~128 GB)--> 
 * 1M DeCAF 4,096-D vectors: Dataset: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/decaf_1m.gz) (~7 GB)
-* 1M DeCAF 4,096-D vectors: Queries: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Query/decaf_1m.gz) (~7 GB)
-* 1M DeCAF 4,096-D vectors: Pivots: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Pivot/decaf_1m.gz) (~7 GB)
+* 1M DeCAF 4,096-D vectors: Queries: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Query/decaf_1m.gz) (~7 MB)
+* 1M DeCAF 4,096-D vectors: Pivots: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Pivot/decaf_1m.gz) (~17 MB)
 
 * 17K PKU-MMD_10fps MoCAP data: please reach out to us at v.mic11111@gmail.com. The data cannot be provided online due to copyright.
 * 17K PKU-MMD_30fps MoCAP data: please reach out to us at v.mic11111@gmail.com. The data cannot be provided online due to copyright.
