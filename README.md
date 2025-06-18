@@ -14,7 +14,7 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 * The class produces results that are consistent with the article. pdf files with the plots are stored in the folder Similarity_search/Plots/ICDE25_DataDepPtolemaicFilering/
 * Results of the search in .gz format and the csv file with statistics are stored in respective folders in Similarity_search/Result/ ... The statistics are stored in the folder Processed_stats
 
-### Reproducibility Steps -- CLIP / DeCAF Datasets
+### Reproducibility Steps -- PKU-MMD / DeCAF Datasets
 
 * Download the corresponding datasets you would like to evaluate (see the download links below)
 * Set up the main Java class ```vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain``` (project VMFSMetricSpace) by selecting the datasets to be tested. The instances of datasets tested in the article are: 
@@ -35,6 +35,8 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 <!--* 10M CLIP vectors reduced by PCA to 256-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/laion2B-en-clip768v2-n=10M.h5_PCA256.gz) (~13 GB)
 * 102M CLIP vectors reduced by PCA to 256-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/laion2B-en-clip768v2-n=100M.h5_PCA256.gz) (~128 GB)--> 
 * 1M DeCAF 4,096-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/decaf_1m.gz) (~7 GB)
+* 17K PKU-MMD_10fps MoCAP data: please reach out to us at v.mic11111@gmail.com. The data cannot be provided online due to copyright.
+* 17K PKU-MMD_30fps MoCAP data: please reach out to us at v.mic11111@gmail.com. The data cannot be provided online due to copyright.
 <!--* 96M Yahoo 4,096-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/decaf_100m.gz) (~559 GB)--> 
 
 <!--## Key-value Storages
