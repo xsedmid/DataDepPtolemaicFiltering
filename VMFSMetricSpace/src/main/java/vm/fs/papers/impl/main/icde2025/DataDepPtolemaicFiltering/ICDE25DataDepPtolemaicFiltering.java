@@ -1,6 +1,7 @@
 package vm.fs.papers.impl.main.icde2025.DataDepPtolemaicFiltering;
 
 import java.util.List;
+import vm.fs.FSGlobal;
 import vm.fs.main.datatools.FSPrepareNewDatasetForPivotFilterings;
 import vm.fs.main.search.perform.FSKNNQueriesSeqScanWithFilteringMain;
 import vm.fs.metricSpaceImpl.FSMetricSpaceImpl;
@@ -40,12 +41,13 @@ public class ICDE25DataDepPtolemaicFiltering {
     public static final Boolean SKIP_EVERYHING_PREPARED = true;
 
     public static void main(String[] args) {
+        FSGlobal.askWhenGoingToOverrideFile = false;
         // params. Feel free to modify.
         int[] dimensionalities = {10, 40};
         // number of vectors in each dataset
         int datasetObjectCount = 1000 * 1000;
         // number of pivots used for the filterings. In current settings, it also equals the number of defined lower bounds per each distance.
-        int pivotsCount = 128;
+        int pivotsCount = 64;
         // number of generated and examined query objects
         int queriesCount = 1000;
         // the result set size for kNN search
