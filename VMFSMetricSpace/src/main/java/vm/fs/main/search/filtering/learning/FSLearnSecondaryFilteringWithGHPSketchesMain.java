@@ -7,7 +7,7 @@ package vm.fs.main.search.filtering.learning;
 import java.io.File;
 import java.util.logging.Logger;
 import vm.fs.FSGlobal;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.filtering.FSSecondaryFilteringWithSketchesStorage;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.distance.bounding.nopivot.learning.LearningSecondaryFilteringWithSketches;
@@ -24,18 +24,18 @@ public class FSLearnSecondaryFilteringWithGHPSketchesMain {
     public static void main(String[] args) {
         boolean publicQueries = false;
         Dataset[] fullDatasets = new Dataset[]{
-            new FSDatasetInstanceSingularizator.DeCAFDataset(),
-            new FSDatasetInstanceSingularizator.LAION_100k_Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_10M_Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_30M_Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_100M_Dataset(publicQueries)
+            new FSDatasetInstances.DeCAFDataset(),
+            new FSDatasetInstances.LAION_100k_Dataset(publicQueries),
+            new FSDatasetInstances.LAION_10M_Dataset(publicQueries),
+            new FSDatasetInstances.LAION_30M_Dataset(publicQueries),
+            new FSDatasetInstances.LAION_100M_Dataset(publicQueries)
         };
         Dataset[] sketchesDatasets = new Dataset[]{
-            new FSDatasetInstanceSingularizator.DeCAF_GHP_50_256Dataset(),
-            new FSDatasetInstanceSingularizator.LAION_100k_GHP_50_384Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_10M_GHP_50_384Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_30M_GHP_50_384Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_100M_GHP_50_384Dataset(publicQueries)
+            new FSDatasetInstances.DeCAF_GHP_50_256Dataset(),
+            new FSDatasetInstances.LAION_100k_GHP_50_384Dataset(publicQueries),
+            new FSDatasetInstances.LAION_10M_GHP_50_384Dataset(publicQueries),
+            new FSDatasetInstances.LAION_30M_GHP_50_384Dataset(publicQueries),
+            new FSDatasetInstances.LAION_100M_GHP_50_384Dataset(publicQueries)
         };
         float[] distIntervalsForPX = new float[]{
             2,

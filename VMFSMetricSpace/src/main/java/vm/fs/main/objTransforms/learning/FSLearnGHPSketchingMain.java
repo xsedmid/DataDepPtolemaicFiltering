@@ -1,7 +1,7 @@
 package vm.fs.main.objTransforms.learning;
 
 import java.util.Map;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.dataTransforms.FSGHPSketchesPivotPairsStorageImpl;
 import vm.fs.store.precomputedDists.FSPrecomputedDistancesMatrixLoaderImpl;
 import vm.metricSpace.Dataset;
@@ -18,7 +18,7 @@ public class FSLearnGHPSketchingMain {
         PivotPairsStoreInterface sketchingTechStorage = new FSGHPSketchesPivotPairsStorageImpl();
         int[] sketchesLengths = new int[]{384, 1024};
         Dataset[] datasets = new Dataset[]{
-            new FSDatasetInstanceSingularizator.LAION_100M_Dataset(true)
+            new FSDatasetInstances.LAION_100M_Dataset(true)
         };
         for (Dataset dataset : datasets) {
             run(dataset, sketchingTechStorage, sketchesLengths);

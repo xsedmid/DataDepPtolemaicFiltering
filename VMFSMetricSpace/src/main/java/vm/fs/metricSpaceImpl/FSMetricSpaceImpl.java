@@ -1,16 +1,16 @@
 package vm.fs.metricSpaceImpl;
 
 import java.util.AbstractMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.logging.Logger;
+import vm.fs.metricSpaceImpl.parsersOfOtherFormats.impl.FSMocapJanStorage;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.distance.impl.L2OnFloatsArray;
 import vm.metricSpace.distance.impl.Sapir3DistanceFunction;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.impl.AngularDistance;
 import vm.metricSpace.distance.impl.CosineDistance;
+import vm.metricSpace.distance.impl.DTWOnFloatsArray;
 import vm.metricSpace.distance.impl.DotProduct;
 import vm.metricSpace.distance.impl.HammingDistanceLongs;
 
@@ -64,6 +64,11 @@ public class FSMetricSpaceImpl<T> extends AbstractMetricSpace<T> {
             case ("mpeg7_1m"): {
                 return (DistanceFunctionInterface<T>) new Sapir3DistanceFunction();
             }
+            case (FSMocapJanStorage.DATASET_NAME_10FPS):
+            case (FSMocapJanStorage.DATASET_NAME_30FPS):
+            case (FSMocapJanStorage.DATASET_NAME_10FPS + "_selected.txt"):
+            case (FSMocapJanStorage.DATASET_NAME_30FPS + "_selected.txt"):
+                return (DistanceFunctionInterface<T>) new DTWOnFloatsArray();
         }
         throw new IllegalArgumentException("Unknown dataset name " + datasetName + ". No distance function provided.");
     }
@@ -76,7 +81,7 @@ public class FSMetricSpaceImpl<T> extends AbstractMetricSpace<T> {
 
     @Override
     public T getDataOfMetricObject(Object o) {
-        Map.Entry<Object, T> entry = (Map.Entry<Object, T>) o;
+        Map.Entry<Comparable, T> entry = (Map.Entry<Comparable, T>) o;
         return entry.getValue();
     }
 

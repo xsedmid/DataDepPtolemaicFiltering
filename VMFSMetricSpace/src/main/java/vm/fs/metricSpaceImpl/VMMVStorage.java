@@ -77,6 +77,7 @@ public class VMMVStorage<T> {
     public File getFile() {
         File ret = new File(FSGlobal.DATASET_MVSTORAGE_FOLDER, datasetName);
         ret = FSGlobal.checkFileExistence(ret, willBeDeleted);
+        FSMetricSpacesStorage.checkBigTertiaryDatasetStorage(ret);
         return ret;
     }
 

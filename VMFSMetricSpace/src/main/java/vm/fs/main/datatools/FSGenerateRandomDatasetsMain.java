@@ -8,7 +8,7 @@ import vm.fs.metricSpaceImpl.FSMetricSpaceImpl;
 import vm.fs.metricSpaceImpl.FSMetricSpacesStorage;
 import vm.metricSpace.AbstractMetricSpacesStorage;
 import vm.metricSpace.data.RandomVectorsGenerator;
-import vm.metricSpace.data.toStringConvertors.impl.FloatVectorConvertor;
+import vm.metricSpace.data.toStringConvertors.impl.FloatVectorToStringConvertor;
 
 /**
  *
@@ -17,7 +17,7 @@ import vm.metricSpace.data.toStringConvertors.impl.FloatVectorConvertor;
 public class FSGenerateRandomDatasetsMain {
 
     public static void main(String[] args) {
-        FloatVectorConvertor floatVectorConvertor = new FloatVectorConvertor();
+        FloatVectorToStringConvertor floatVectorConvertor = new FloatVectorToStringConvertor();
         FSMetricSpaceImpl<float[]> metricSpace = new FSMetricSpaceImpl<>();
         AbstractMetricSpacesStorage storage = new FSMetricSpacesStorage(metricSpace, floatVectorConvertor);
 

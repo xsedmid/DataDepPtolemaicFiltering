@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.precomputedDists.FSPrecomputedDistancesMatrixLoaderImpl;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
@@ -34,7 +34,7 @@ public class FSEvalAndStoreObjectsToPivotsDistsMain {
             //            new FSDatasetInstanceSingularizator.SIFTdataset(),
             //            new FSDatasetInstanceSingularizator.MPEG7dataset(),
             //            new FSDatasetInstanceSingularizator.RandomDataset20Uniform()
-            new FSDatasetInstanceSingularizator.LAION_10M_Dataset(publicQueries), //            new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset()
+            new FSDatasetInstances.LAION_10M_Dataset(publicQueries), //            new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset()
         };
         for (Dataset dataset : datasets) {
             run(dataset, dataset.getRecommendedNumberOfPivotsForFiltering());
@@ -69,7 +69,6 @@ public class FSEvalAndStoreObjectsToPivotsDistsMain {
                 if (batchCounter == 0) {
                     outputStream.write(';');
                     for (Comparable pivotID : pivotIDs) {
-                        Integer index = columnHeaders.get(pivotID);
                         outputStream.write(pivotID.toString().getBytes());
                         outputStream.write(';');
                     }

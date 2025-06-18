@@ -1,7 +1,7 @@
 package vm.fs.main.objTransforms.apply;
 
 import vm.objTransforms.perform.TransformDataToGHPSketches;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.metricSpaceImpl.FSMetricSpaceImpl;
 import vm.fs.metricSpaceImpl.FSMetricSpacesStorage;
 import vm.fs.store.dataTransforms.FSGHPSketchesPivotPairsStorageImpl;
@@ -23,7 +23,7 @@ public class FSApplyGHPSketchingMain {
 //            new FSDatasetInstanceSingularizator.LAION_300k_Dataset(publicQueries),
 //            new FSDatasetInstanceSingularizator.LAION_10M_Dataset(publicQueries),
 //            new FSDatasetInstanceSingularizator.LAION_30M_Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_100M_Dataset(publicQueries)
+            new FSDatasetInstances.LAION_100M_Dataset(publicQueries)
         };
         for (Dataset dataset : datasets) {
             run(dataset);

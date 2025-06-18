@@ -15,6 +15,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.fs.FSGlobal;
 import vm.metricSpace.AbstractMetricSpace;
@@ -59,7 +60,7 @@ public class H5MetricSpacesStorage<T> extends FSMetricSpacesStorage<T> {
 
     @Override
     public Iterator<Object> getIteratorOfObjects(File f, Object... params) {
-        List<Object> listOfParams = Tools.arrayToList(params);
+        List<Object> listOfParams = DataTypeConvertor.arrayToList(params);
         if (params.length > 0 && listOfParams.contains("P")) {
             Iterator<Object> it = super.getIteratorOfObjects(f, params);
             return it;

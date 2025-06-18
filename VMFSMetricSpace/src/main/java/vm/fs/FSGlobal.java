@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import vm.javatools.Tools;
 
 /**
  *
@@ -11,7 +12,16 @@ import javax.swing.JOptionPane;
  */
 public class FSGlobal {
 
-    public static final Boolean ASK_FOR_EXISTENCE = false;
+    public static Boolean askWhenGoingToOverrideFile = null;
+    public static final boolean SLEEP_MY_COMP = true;
+    private static final Logger LOG = Logger.getLogger(FSGlobal.class.getName());
+
+    /**
+     * N drive is the tertiary storage with slow reading. If dataset is stored
+     * there and should be read, the flag decides whether the Exception is fired
+     * instead.
+     */
+    public static final Boolean STOP_ON_READING_FROM_NAS = true;
 
     private static String initRoot() {
         String separator = System.getProperty("file.separator");
@@ -26,6 +36,10 @@ public class FSGlobal {
         for (String path : paths) {
             File f = new File(path);
             if (f.exists()) {
+                String env = System.getenv("USERDOMAIN");
+                if (env != null && SLEEP_MY_COMP) {
+                    Tools.setSleepDuringTheNight(env.equals("VLADUV-POCITAC"));
+                }
                 return path;
             }
         }
@@ -63,7 +77,7 @@ public class FSGlobal {
     public static final String AUXILIARY_FOR_PTOLEMAIOS_WITH_LIMITED_ANGLES = AUXILIARY_FOR_DATA_FILTERING + "Ptolemaios_limited_angles\\";
     public static final String AUXILIARY_FOR_PTOLEMAIOS_COEFS_WITH_LIMITED_ANGLES = AUXILIARY_FOR_PTOLEMAIOS_WITH_LIMITED_ANGLES + "Simple_coefs\\";
 
-    public static final String PARTITIONED_DATASETS = DATASET_FOLDER + "Partitioning\\";
+    public static final String PARTITIONED_DATASETS = DATA_FOLDER + "Partitioning\\";
     public static final String VORONOI_PARTITIONING_STORAGE = PARTITIONED_DATASETS + "Voronoi_partitioning\\";
     public static final String GRAPPLE_PARTITIONING_STORAGE = AUXILIARY_FOR_DATA_FILTERING + "GRAPPLE_partitioning\\";
 
@@ -72,16 +86,17 @@ public class FSGlobal {
     public static final String FOLDER_DATA_FOR_PLOTS = FOLDER_PLOTS + "Data\\";
     public static final String DIST_DISTRIBUTION_PLOTS_FOLDER = DATA_FOLDER + "DD_Plots\\";
 
-    private static final Logger LOG = Logger.getLogger(FSGlobal.class.getName());
-
     public static final File checkFileExistence(File file, boolean willBeDeleted) {
         Object[] options = new String[]{"Yes", "No"};
         file = new File(checkUnixPath(file.getAbsolutePath()));
         file.getParentFile().mkdirs();
-        if (file.exists() && willBeDeleted && ASK_FOR_EXISTENCE) {
+        if (file.exists() && willBeDeleted && askWhenGoingToOverrideFile == null) {
+            askRewritting();
+        }
+        if (file.exists() && willBeDeleted && askWhenGoingToOverrideFile) {
             LOG.log(Level.WARNING, "Asking for a question, waiting for the reply: {0}", file.getAbsolutePath());
             String question = "File " + file.getName() + " at " + file.getAbsolutePath() + " already exists. Do you want to delete its content? Answer no causes immediate stop.";
-            int add = JOptionPane.showOptionDialog(null, question, "New file?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, JOptionPane.NO_OPTION);
+            int add = JOptionPane.showOptionDialog(null, question, "Override file?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, JOptionPane.NO_OPTION);
             if (add == 1) {
                 System.exit(1);
             }
@@ -94,6 +109,19 @@ public class FSGlobal {
         return file;
     }
 
+    private static void askRewritting() {
+        String question = "Should I ask when going to rewrite existing file?";
+        boolean answer = true;
+        try {
+            Object[] options = new String[]{"Yes", "No"};
+            int banOverloadingFiles = JOptionPane.showOptionDialog(null, question, "Ask when overriding?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, JOptionPane.NO_OPTION);
+            answer = banOverloadingFiles != 1;
+        } catch (Exception e) {
+        }
+        askWhenGoingToOverrideFile = answer;
+        LOG.log(Level.INFO, "Will ask when rewritting a file? {0}", askWhenGoingToOverrideFile);
+    }
+
     public static final File checkFileExistence(File file) {
         return checkFileExistence(file, true);
     }
@@ -104,5 +132,4 @@ public class FSGlobal {
         }
         return path;
     }
-
 }

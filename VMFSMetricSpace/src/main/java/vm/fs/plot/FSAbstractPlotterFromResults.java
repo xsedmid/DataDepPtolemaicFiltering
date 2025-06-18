@@ -14,7 +14,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.jfree.chart.JFreeChart;
+import vm.colour.StandardColours;
 import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
 import vm.fs.FSGlobal;
@@ -22,8 +24,8 @@ import vm.fs.store.queryResults.FSQueryExecutionStatsStoreImpl;
 import vm.fs.store.queryResults.FSQueryExecutionStatsStoreImpl.QUERY_STATS;
 import vm.fs.store.queryResults.recallEvaluation.FSRecallOfCandidateSetsStorageImpl;
 import vm.plot.AbstractPlotter;
-import vm.plot.impl.BoxPlotPlotter;
-import vm.plot.impl.BoxPlotXYPlotter;
+import vm.plot.impl.BoxPlotXCategoriesPlotter;
+import vm.plot.impl.BoxPlotXNumbersPlotter;
 
 /**
  *
@@ -36,7 +38,7 @@ public abstract class FSAbstractPlotterFromResults {
     private final boolean plotOnlyPDF;
     private AbstractPlotter plotter = getPlotter();
     private final Object[] xTicks;
-    private final AbstractPlotter.COLOUR_NAMES[] colourIndexesForTraces;
+    private final StandardColours.COLOUR_NAME[] colourIndexesForTraces;
     private final String[] folderNames;
 
     protected FSAbstractPlotterFromResults(boolean plotOnlyPDF, Object[] xTicks, String[] folderNames) {
@@ -56,8 +58,8 @@ public abstract class FSAbstractPlotterFromResults {
     }
 
     private void check() {
-        if (plotter instanceof BoxPlotPlotter && Tools.isParseableToFloats(xTicks)) {
-            plotter = new BoxPlotXYPlotter();
+        if (plotter instanceof BoxPlotXCategoriesPlotter && Tools.isParseableToFloats(xTicks)) {
+            plotter = new BoxPlotXNumbersPlotter();
         }
         if (colourIndexesForTraces != null && colourIndexesForTraces.length < folderNames.length) {
             throw new IllegalArgumentException("Incosistent specification of colours and folders. The counts do not match. Colours: " + colourIndexesForTraces.length + ", folders: " + folderNames.length);
@@ -84,7 +86,7 @@ public abstract class FSAbstractPlotterFromResults {
 
     protected abstract Float transformAdditionalStatsForQueryToFloat(float firstValue);
 
-    protected abstract AbstractPlotter.COLOUR_NAMES[] getVoluntaryColoursForTracesOrNull();
+    protected abstract StandardColours.COLOUR_NAME[] getVoluntaryColoursForTracesOrNull();
 
     public FilenameFilter getFilenameFilterStatsFiles() {
         String[] array = getUniqueArtifactIdentifyingFileNameForDisplaydGroup();
@@ -96,7 +98,7 @@ public abstract class FSAbstractPlotterFromResults {
     }
 
     protected String getResultFullNameWithDate(QUERY_STATS statName) {
-        int datasetsCount = xTicks.length;
+        int datasetsCount = xTicks == null ? 1 : xTicks.length;
         int techCount = folderNames.length;
         String plotName = plotter.getSimpleName();
         String className = getClass().getCanonicalName();
@@ -142,28 +144,32 @@ public abstract class FSAbstractPlotterFromResults {
                 System.err.println();
                 String message = "You have wrong uniqueArtifactIdentifyingFileNameForDisplaydGroup filter as number of files after the filtering " + files.length + " of folder " + folderWithStats.getAbsolutePath() + " differs from the number of name artifacts " + groupsCount;
                 LOG.log(Level.SEVERE, message);
-                for (int i = 0; i < Math.max(0, groupsCount - files.length); i++) {
-                    ret.add(null);
-                }
                 if (files.length > groupsCount) {
                     for (File file : files) {
                         System.err.println(file.getName());
                     }
                     throw new IllegalArgumentException(message);
+                } else {
+                    String s = ""; // zeptat se, ze je min boxu nez by melo byt, jestli to je umysl
+                    System.err.println("!!!" + folder.getName());
                 }
             }
             if (files.length != 0) {
                 files = reorder(files, uniqueArtifactsForFiles, false);
                 LOG.log(Level.INFO, "Folder {0} contains {1} matching files", new Object[]{folder.getName(), files.length});
-                List list = Tools.arrayToList(files);
+                List list = DataTypeConvertor.arrayToList(files);
                 ret.addAll(list);
+            } else {
+                for (int i = 0; i < groupsCount; i++) {
+                    ret.add(null);
+                }
             }
         }
         LOG.log(Level.INFO, "The final plot will have {0} values in {1} traces which means {2} values per trace on average", new Object[]{ret.size(), folders.length, (ret.size() / folders.length)});
         return ret;
     }
 
-    private Map<QUERY_STATS, List<Float>[][]> loadStatsFromFileAsListOfXYValues(List<File> files, int groupsCount, int boxplotsCount) {
+    public Map<QUERY_STATS, List<Float>[][]> loadStatsFromFileAsListOfXYValues(List<File> files, int groupsCount, int boxplotsCount) {
         QUERY_STATS[] statsToPrint = getStatsToPrint();
 
         Map<QUERY_STATS, List<Float>[][]> ret = initRet(groupsCount, boxplotsCount, statsToPrint);
@@ -180,10 +186,18 @@ public abstract class FSAbstractPlotterFromResults {
             Map<String, TreeMap<QUERY_STATS, String>> results = storage.getContent();
             for (QUERY_STATS stat : statsToPrint) {
                 List<Float>[][] listOfValues = ret.get(stat);
+                if (traceIdx >= listOfValues.length || groupIdx >= listOfValues[traceIdx].length) {
+                    LOG.log(Level.SEVERE, "Too many files remained after the filtering ({0}). Only {1} are expected!", new Object[]{files.size(), groupsCount * boxplotsCount});
+                    for (int j = 0; j < files.size(); j++) {
+                        File file1 = files.get(j);
+                        String s = file1 == null ? "null" : file1.getAbsolutePath();
+                        System.err.println(s);
+                    }
+                }
                 List<Float> values = listOfValues[traceIdx][groupIdx];
                 update(values, results, stat);
                 if (stat.equals(QUERY_STATS.recall) && !values.isEmpty()) {
-                    float min = (float) vm.math.Tools.getMin(DataTypeConvertor.floatToPrimitiveArray(values));
+                    float min = (float) vm.mathtools.Tools.getMin(DataTypeConvertor.floatToPrimitiveArray(values));
                     plotter.updateMinRecall(min);
                 }
                 if (values.isEmpty()) {
@@ -195,7 +209,7 @@ public abstract class FSAbstractPlotterFromResults {
     }
 
     public void makePlots() {
-        int groupsCount = xTicks.length;
+        int groupsCount = xTicks == null ? 1 : xTicks.length;
         int boxplotsCount = getDisplayedNamesOfTracesThatMatchesFolders().length;
         if (boxplotsCount < folderNames.length) {
             throw new IllegalArgumentException("Inconsistent numbers: the number of folders returned by getFolderNamesForDisplayedTraces() " + folderNames.length + " does not match the number of names given by getDisplayedNamesOfTracesThatMatchesFolders() " + boxplotsCount);
@@ -214,16 +228,18 @@ public abstract class FSAbstractPlotterFromResults {
 
     private void makePlotsForQueryStats(QUERY_STATS key, Map<QUERY_STATS, List<Float>[][]> dataForStats, AbstractPlotter plotter, String yAxisLabel) {
         List<Float>[][] values = dataForStats.get(key);
+        String path = getResultFullNameWithDate(key);
         if (isEmpty(values)) {
+            LOG.log(Level.WARNING, "NO VALUES FOR KEY {0} AND PATH {1}", new Object[]{key, path});
             return;
         }
-        String path = getResultFullNameWithDate(key);
         LOG.log(Level.INFO, "Path for future plot: {0}", path);
         String xAxisLabel = getXAxisLabel();
         JFreeChart plot = plotter.createPlot("", xAxisLabel, yAxisLabel, getDisplayedNamesOfTracesThatMatchesFolders(), colourIndexesForTraces, xTicks, values);
-        plotter.storePlotPDF(path, plot);
+
+        storePDF(plotter, path, plot);
         if (!plotOnlyPDF) {
-            plotter.storePlotPNG(path, plot);
+            storePNG(plotter, path, plot);
         }
     }
 
@@ -267,7 +283,7 @@ public abstract class FSAbstractPlotterFromResults {
         };
     }
 
-    protected String[] strings(String... strings) {
+    public static String[] strings(String... strings) {
         return strings;
     }
 
@@ -366,8 +382,8 @@ public abstract class FSAbstractPlotterFromResults {
         for (QUERY_STATS stat : statsToPrint) {
             List[][] lists = new List[boxplotsCount][groupsCount];
             for (int g = 0; g < groupsCount; g++) {
-                for (int t = 0; t < boxplotsCount; t++) {
-                    lists[t][g] = new ArrayList();
+                for (int b = 0; b < boxplotsCount; b++) {
+                    lists[b][g] = new ArrayList();
                 }
             }
             ret.put(stat, lists);
@@ -390,7 +406,7 @@ public abstract class FSAbstractPlotterFromResults {
         if (all.isEmpty()) {
             return "s";
         }
-        double max = vm.math.Tools.getMax(DataTypeConvertor.floatToPrimitiveArray(all));
+        double max = vm.mathtools.Tools.getMax(DataTypeConvertor.floatToPrimitiveArray(all));
         if (max >= 1300) {
             for (List<Float>[] timeValue : timeValues) {
                 for (List<Float> list : timeValue) {
@@ -435,5 +451,13 @@ public abstract class FSAbstractPlotterFromResults {
             }
         }
         return ret;
+    }
+
+    protected void storePDF(AbstractPlotter plotter, String path, JFreeChart plot) {
+        plotter.storePlotPDF(path, plot);
+    }
+
+    protected void storePNG(AbstractPlotter plotter, String path, JFreeChart plot) {
+        plotter.storePlotPNG(path, plot);
     }
 }

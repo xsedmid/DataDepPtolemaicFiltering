@@ -4,7 +4,7 @@
  */
 package vm.fs.main.datatools.storage;
 
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.metricSpaceImpl.FSMetricSpacesStorage;
 import vm.metricSpace.AbstractMetricSpacesStorage;
 import vm.metricSpace.Dataset;
@@ -48,7 +48,7 @@ public class FSCheckDatasetFilesConsistency {
             //            new FSDatasetInstanceSingularizator.LAION_100k_PCA32Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_300k_PCA32Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_10M_PCA32Dataset(),
-            new FSDatasetInstanceSingularizator.LAION_30M_PCA32Dataset(),
+            new FSDatasetInstances.LAION_30M_PCA32Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_100M_PCA32Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_100k_PCA96Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_300k_PCA96Dataset(),
@@ -79,12 +79,12 @@ public class FSCheckDatasetFilesConsistency {
             //            new FSDatasetInstanceSingularizator.LAION_30M_GHP_50_384Dataset(publicQueries),
             //            new FSDatasetInstanceSingularizator.LAION_30M_GHP_50_1024Dataset(publicQueries),
             //            new FSDatasetInstanceSingularizator.LAION_100M_GHP_50_384Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_100M_GHP_50_1024Dataset(publicQueries),
+            new FSDatasetInstances.LAION_100M_GHP_50_1024Dataset(publicQueries),
             //            new FSDatasetInstanceSingularizator.LAION_100k_GHP_50_512Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_300k_GHP_50_512Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_10M_GHP_50_512Dataset(publicQueries),
             //            new FSDatasetInstanceSingularizator.LAION_30M_GHP_50_512Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_100M_GHP_50_512Dataset(publicQueries)
+            new FSDatasetInstances.LAION_100M_GHP_50_512Dataset(publicQueries)
         };
         for (Dataset dataset : datasets) {
             run(dataset);

@@ -3,10 +3,10 @@ package vm.search.algorithm;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
+import vm.metricSpace.DatasetOfCandidates;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
@@ -29,10 +30,16 @@ public abstract class SearchingAlgorithm<T> {
 
     private static final Logger LOG = Logger.getLogger(SearchingAlgorithm.class.getName());
     public static final Integer K_IMPLICIT_FOR_QUERIES = 30;
+    public static final int STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX = 5; // deprecated to use larger number. The memory overhead mitigates a positive influence of caching in case of large datasets
     public static final Integer BATCH_SIZE = 5000000; //  5000000 simulates independent queries as data are not effectively cached in the CPU cache
+
+    public static int getNumberOfRepetitionsDueToCaching(Dataset dataset) {
+        return dataset instanceof DatasetOfCandidates ? 1 : 2;
+    }
 
     protected final ConcurrentHashMap<Comparable, AtomicInteger> distCompsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Comparable, AtomicLong> timesPerQueries = new ConcurrentHashMap();
+    protected final ConcurrentHashMap<Comparable, List<AtomicLong>> additionalStatsPerQueries = new ConcurrentHashMap();
     protected final ConcurrentHashMap<Comparable, float[]> qpDistsCached = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<Comparable, int[]> qPivotPermutationCached = new ConcurrentHashMap<>();
 
@@ -67,6 +74,9 @@ public abstract class SearchingAlgorithm<T> {
     }
 
     public static float adjustAndReturnSearchRadiusAfterAddingOne(TreeSet<Map.Entry<Comparable, Float>> currAnswer, int k, float searchRadius) {
+        if (currAnswer == null) {
+            return Float.MAX_VALUE;
+        }
         int size = currAnswer.size();
         if (size < k) {
             return searchRadius;
@@ -75,6 +85,20 @@ public abstract class SearchingAlgorithm<T> {
             currAnswer.remove(currAnswer.last());
         }
         return currAnswer.last().getValue();
+    }
+
+    protected void incAdditionalParam(Comparable qId, long byValue, int idx) {
+        List<AtomicLong> list = additionalStatsPerQueries.get(qId);
+        if (list == null) {
+            list = new ArrayList<>();
+            additionalStatsPerQueries.put(qId, list);
+        }
+        if (list.size() <= idx) {
+            for (int i = list.size(); i <= idx; i++) {
+                list.add(new AtomicLong());
+            }
+        }
+        list.get(idx).addAndGet(byValue);
     }
 
     public float adjustAndReturnSearchRadiusAfterAddingMore(TreeSet<Map.Entry<Comparable, Float>> currAnswer, int k, float searchRadius) {
@@ -165,6 +189,7 @@ public abstract class SearchingAlgorithm<T> {
                     final Object queryObject = queryObjects.get(i);
                     final TreeSet<Map.Entry<Comparable, Float>> answerToQuery = ret[i];
                     threadPool.execute(() -> {
+                        vm.javatools.Tools.sleepDuringTheNight();
                         TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch = completeKnnSearch(metricSpaceFinal, queryObject, k, batch.iterator(), answerToQuery, additionalParams);
                         answerToQuery.addAll(completeKnnSearch);
                         latch.countDown();
@@ -221,27 +246,62 @@ public abstract class SearchingAlgorithm<T> {
         return ret;
     }
 
-    public TreeSet<Map.Entry<Object, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k) {
+    public TreeSet<Map.Entry<Comparable, Float>>[] evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k) {
+        Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> map = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k, false, -1);
+        return map.get(-1);
+    }
+
+    /**
+     * Returns candidate set size mapped to the sorted sets (for each query) of
+     * nearest neighbours in a form of <Map.Entry<Object, Float>> of id and
+     * distance
+     *
+     * @param dataset
+     * @param queryObjects
+     * @param k
+     * @param storePartialCandSetSizes
+     * @param candidatesProvided
+     * @return
+     */
+    public Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> evaluateIteratorsSequentiallyForEachQuery(Dataset dataset, List queryObjects, int k, boolean storePartialCandSetSizes, int candidatesProvided) {
         AbstractMetricSpace metricSpace = dataset.getMetricSpace();
-        final TreeSet<Map.Entry<Object, Float>>[] ret = new TreeSet[queryObjects.size()];
-        LOG.log(Level.INFO, "Warming up disk storage");
-        for (int i = 0; i < 20; i++) { // for the sake of disk caching
-            Object q = queryObjects.get(queryObjects.size() - 1 - i);
-            Comparable qID = metricSpace.getIDOfMetricObject(q);
-            Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
-            while (candsIt.hasNext()) {
-                Object cand = candsIt.next();
-                Object tmp = metricSpace.getDataOfMetricObject(cand);
-            }
+        int batchSize = storePartialCandSetSizes && candidatesProvided > 0 ? candidatesProvided / STEP_COUNTS_FOR_CAND_SE_PROCESSING_FROM_INDEX : candidatesProvided;
+        if (batchSize < 0) {
+            batchSize = BATCH_SIZE;
         }
+        Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> ret = initAnswerMapForCandSetSizes(candidatesProvided, queryObjects.size(), batchSize);
         for (int i = 0; i < queryObjects.size(); i++) {
+            vm.javatools.Tools.sleepDuringTheNight();
             Object q = queryObjects.get(i);
             Comparable qID = metricSpace.getIDOfMetricObject(q);
             Iterator candsIt = dataset.getMetricObjectsFromDataset(qID);
-            ret[i] = completeKnnSearch(metricSpace, q, k, candsIt);
+            for (int batchCounter = 1; candsIt.hasNext(); batchCounter++) {
+                Iterator<Object> batchIt = Tools.getObjectsFromIterator(candsIt, batchSize).iterator();
+                TreeSet<Map.Entry<Comparable, Float>>[] prev = candidatesProvided < 0 ? ret.get(-1) : ret.get((batchCounter - 1) * batchSize);
+                TreeSet<Map.Entry<Comparable, Float>> newAnswer = prev == null || prev[i] == null ? null : new TreeSet<>(prev[i].comparator());
+                if (newAnswer != null) {
+                    newAnswer.addAll(prev[i]);
+                }
+                TreeSet<Map.Entry<Comparable, Float>>[] retForCandSetSize = candidatesProvided < 0 ? ret.get(-1) : ret.get(batchCounter * batchSize);
+                retForCandSetSize[i] = completeKnnSearch(metricSpace, q, k, batchIt, newAnswer, batchCounter * batchSize);
+                incAdditionalParam(qID, getTimeOfQuery(qID), 2 * batchCounter - 1);
+                incAdditionalParam(qID, getDistCompsForQuery(qID), 2 * batchCounter);
+            }
             long timeOfQuery = getTimeOfQuery(qID);
             int dc = getDistCompsForQuery(qID);
             LOG.log(Level.INFO, "Evaluated query {0} in {1} ms with {2} dc", new Object[]{i, timeOfQuery, dc});
+        }
+        return ret;
+    }
+
+    private Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> initAnswerMapForCandSetSizes(int candidatesProvided, int queriesCount, int batch) {
+        Map<Integer, TreeSet<Map.Entry<Comparable, Float>>[]> ret = new TreeMap<>();
+        if (candidatesProvided == -1) {
+            ret.put(candidatesProvided, new TreeSet[queriesCount]);
+        } else {
+            for (int batchCurr = 0; batchCurr <= candidatesProvided; batchCurr += batch) {
+                ret.put(batchCurr, new TreeSet[queriesCount]);
+            }
         }
         return ret;
     }
@@ -295,8 +355,8 @@ public abstract class SearchingAlgorithm<T> {
         return timesPerQueries.get(qId).get();
     }
 
-    public Map<Object, AtomicLong>[] getAddditionalStats() {
-        return new HashMap[0];
+    public Map<Comparable, List<AtomicLong>> getAdditionalStats() {
+        return Collections.unmodifiableMap(additionalStatsPerQueries);
     }
 
     public abstract String getResultName();

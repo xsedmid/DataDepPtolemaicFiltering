@@ -5,14 +5,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.ToolsMetricDomain;
 import vm.search.algorithm.SearchingAlgorithm;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.bounding.onepivot.AbstractOnePivotFilter;
+import vm.metricSpace.distance.impl.DTWOnFloatsArray;
 
 /**
  * takes pivot pairs in a linear way, i.e., [0], [1], then [2], [3], etc.
@@ -31,22 +30,19 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     private final Map<Object, Integer> rowHeaders;
     private final DistanceFunctionInterface<T> df;
 
-    private final ConcurrentHashMap<Object, AtomicLong> lbCheckedForQ;
-
     public KNNSearchWithOnePivotFiltering(AbstractMetricSpace<T> metricSpace, AbstractOnePivotFilter filter, List<Object> pivots, float[][] poDists, Map<Object, Integer> rowHeaders, Map<Object, Integer> columnHeaders, DistanceFunctionInterface<T> df) {
         this.filter = filter;
         this.pivotsData = metricSpace.getDataOfMetricObjects(pivots);
         this.poDists = poDists;
         this.df = df;
         this.rowHeaders = rowHeaders;
-        this.lbCheckedForQ = new ConcurrentHashMap();
     }
 
     @Override
     public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
         long lbChecked = 0;
-        TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
+        TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 || params[0] == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
         Comparable qId = metricSpace.getIDOfMetricObject(q);
         T qData = metricSpace.getDataOfMetricObject(q);
         float[] qpDists = qpDistsCached.get(qId);
@@ -83,10 +79,6 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
                     lowerBound = filter.lowerBound(distQP, distPO, pIdx);
                     if (lowerBound > range) {
                         lbChecked += p + 1;
-                        T oData = metricSpace.getDataOfMetricObject(o);
-                        if (df.getDistance(qData, oData) > lowerBound) {
-                            String s = "Achtung";
-                        }
                         continue objectsLoop;
                     }
                 }
@@ -103,8 +95,8 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
         t += System.currentTimeMillis();
         incTime(qId, t);
         incDistsComps(qId, distComps);
-        incLBChecked(qId, lbChecked);
-        System.out.println(qId + ": " + t + " ms");
+        incAdditionalParam(qId, lbChecked, 0);
+        System.out.println(qId + ": " + t + " ms;" + distComps + " DC");
         return ret;
     }
 
@@ -116,20 +108,6 @@ public class KNNSearchWithOnePivotFiltering<T> extends SearchingAlgorithm<T> {
     @Override
     public String getResultName() {
         return filter.getTechFullName();
-    }
-
-    private void incLBChecked(Object qId, long lbChecked) {
-        AtomicLong ai = lbCheckedForQ.get(qId);
-        if (ai != null) {
-            ai.addAndGet(lbChecked);
-        } else {
-            lbCheckedForQ.put(qId, new AtomicLong(lbChecked));
-        }
-    }
-
-    @Override
-    public Map<Object, AtomicLong>[] getAddditionalStats() {
-        return new Map[]{lbCheckedForQ};
     }
 
 }

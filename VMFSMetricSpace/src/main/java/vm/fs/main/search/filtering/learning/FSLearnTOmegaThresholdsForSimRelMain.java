@@ -1,6 +1,6 @@
 package vm.fs.main.search.filtering.learning;
 
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.metricSpace.Dataset;
 import vm.fs.store.filtering.FSSimRelThresholdsTOmegaStorage;
 import vm.simRel.impl.learn.ThresholdsTOmegaEvaluator;
@@ -15,7 +15,7 @@ public class FSLearnTOmegaThresholdsForSimRelMain {
     public static void main(String[] args) {
         Dataset[] pcaDatasets = new Dataset[]{
             //            new FSDatasetInstanceSingularizator.DeCAF_PCA256Dataset(),
-            new FSDatasetInstanceSingularizator.LAION_100M_PCA96Dataset()
+            new FSDatasetInstances.LAION_100M_PCA96Dataset()
         };
         for (Dataset pcaDataset : pcaDatasets) {
             run(pcaDataset);

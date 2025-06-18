@@ -2,7 +2,7 @@ package vm.fs.main.objTransforms.apply;
 
 import java.util.Iterator;
 import vm.datatools.Tools;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import static vm.fs.main.objTransforms.learning.FSLearnSVDMain.SAMPLE_COUNT;
 import vm.fs.metricSpaceImpl.FSMetricSpacesStorage;
 import vm.fs.store.dataTransforms.FSSVDStorageImpl;
@@ -26,7 +26,7 @@ public class FSApplyPCAMain {
     public static void main(String[] args) {
         boolean publicQueries = false;
         Dataset[] datasets = {
-            new FSDatasetInstanceSingularizator.LAION_100M_Dataset(publicQueries)
+            new FSDatasetInstances.LAION_100M_Dataset(publicQueries)
         };
 
         for (Dataset dataset : datasets) {

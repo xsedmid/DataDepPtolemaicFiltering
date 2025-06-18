@@ -13,7 +13,8 @@ import vm.datatools.Tools;
 import vm.fs.FSGlobal;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.ToolsMetricDomain;
-import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentGeneralisedPtolemaicFiltering;
+import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFiltering;
+import vm.metricSpace.distance.bounding.twopivots.impl.DataDependentPtolemaicFilteringForStreamKNNClassifier;
 import vm.metricSpace.distance.bounding.twopivots.storeLearned.PtolemyInequalityWithLimitedAnglesCoefsStoreInterface;
 import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedPairsOfDistancesStorage;
 
@@ -40,7 +41,11 @@ public class FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl implements Pto
         return ret;
     }
 
-    public static DataDependentGeneralisedPtolemaicFiltering getLearnedInstance(String resultPreffixName, Dataset dataset, int pivotCount) {
+    public static DataDependentPtolemaicFiltering getLearnedInstance(String resultPreffixName, Dataset dataset, int pivotCount) {
+        return getLearnedInstance(resultPreffixName, dataset, pivotCount, true);
+    }
+
+    public static DataDependentPtolemaicFiltering getLearnedInstance(String resultPreffixName, Dataset dataset, int pivotCount, boolean queryDynamicPivotPairsSelection) {
         FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl storageOfCoefs = new FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl();
         String fileName = storageOfCoefs.getNameOfFileWithCoefs(dataset.getDatasetName(), pivotCount, true);
         File file = getFile(fileName, false);
@@ -48,17 +53,31 @@ public class FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl implements Pto
         List pivots = dataset.getPivots(pivotCount);
         List pivotIDs = ToolsMetricDomain.getIDsAsList(pivots.iterator(), dataset.getMetricSpace());
         float[][][] coefsToArrays = transformsCoefsToArrays(coefs, pivotIDs);
-        return new DataDependentGeneralisedPtolemaicFiltering(resultPreffixName, coefsToArrays);
+        return new DataDependentPtolemaicFiltering(resultPreffixName, coefsToArrays, queryDynamicPivotPairsSelection);
     }
 
-    private static float[][][] transformsCoefsToArrays(Map<String, float[]> coefs, List pivotIDs) {
+    public static final float[][][] transformsCoefsToArrays(Map<String, float[]> coefs, List pivotIDs) {
         Iterator<String> it = coefs.keySet().iterator();
         float[][][] ret = new float[pivotIDs.size()][pivotIDs.size()][4];
         while (it.hasNext()) {
             String key = it.next();
             String[] pivots = key.split("-");
-            int idx1 = pivotIDs.indexOf(pivots[0]);
-            int idx2 = pivotIDs.indexOf(pivots[1]);
+            String[] pairs = new String[2];
+            if (pivots.length > 2 && pivots.length % 2 == 0) {
+                pairs[0] = pivots[0];
+                pairs[1] = pivots[pivots.length / 2];
+                for (int i = 1; i < pivots.length / 2; i++) {
+                    pairs[0] = pairs[0] + "-" + pivots[i];
+                    pairs[1] = pairs[1] + "-" + pivots[i + pivots.length / 2];
+                }
+            } else {
+                pairs = pivots;
+            }
+            int idx1 = pivotIDs.indexOf(pairs[0]);
+            int idx2 = pivotIDs.indexOf(pairs[1]);
+            if (idx1 == -1 || idx2 == -1) {
+                throw new IllegalArgumentException("Bad pivot IDs. Do they contain unequal number of - in it? " + pivots[0] + "   " + pivots[1]);
+            }
             ret[idx1][idx2] = coefs.get(key);
             ret[idx2][idx1] = coefs.get(key);
         }
@@ -76,6 +95,23 @@ public class FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl implements Pto
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static DataDependentPtolemaicFilteringForStreamKNNClassifier getLearnedInstanceForVoronoiPartitioning(String resultPreffixName, Dataset dataset, int pivotCount, int centroidsCount) {
+        return getLearnedInstanceForVoronoiPartitioning(resultPreffixName, dataset, pivotCount, centroidsCount, true);
+    }
+
+    public static DataDependentPtolemaicFilteringForStreamKNNClassifier getLearnedInstanceForVoronoiPartitioning(String resultPreffixName, Dataset dataset, int pivotCount, int centroidsCount, boolean wisePivotSelection) {
+        FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl storageOfCoefs = new FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl();
+        String fileName = storageOfCoefs.getNameOfFileWithCoefs(dataset.getDatasetName(), pivotCount, true);
+        File file = getFile(fileName, false);
+        Map<String, float[]> coefs = Tools.parseCsvMapKeyFloatValues(file.getAbsolutePath());
+        List pivots = dataset.getPivots(pivotCount);
+        List pivotIDs = ToolsMetricDomain.getIDsAsList(pivots.iterator(), dataset.getMetricSpace());
+        float[][][] coefsToArrays = transformsCoefsToArrays(coefs, pivotIDs);
+        List centroids = dataset.getPivots(centroidsCount);
+        List centroidsData = dataset.getMetricSpace().getDataOfMetricObjects(centroids);
+        return new DataDependentPtolemaicFilteringForStreamKNNClassifier(resultPreffixName, coefsToArrays, centroidsData, dataset.getDistanceFunction(), wisePivotSelection);
     }
 
     public String getNameOfFileWithCoefs(String datasetName, int pivotCount, boolean allPivotPairs) {

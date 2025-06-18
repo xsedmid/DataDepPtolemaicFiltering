@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.DataTypeConvertor;
 import vm.datatools.Tools;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.dataTransforms.FSSVDStorageImpl;
 import vm.fs.store.queryResults.FSNearestNeighboursStorageImpl;
 import vm.fs.store.queryResults.FSQueryExecutionStatsStoreImpl;
@@ -41,8 +41,8 @@ public class FSKNNQueriesSeqScanWithSimRelMain {
 
     public static void main(String[] args) {
         boolean publicQueries = false;
-        Dataset fullDataset = new FSDatasetInstanceSingularizator.LAION_10M_Dataset(publicQueries);
-        Dataset pcaDataset = new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset();
+        Dataset fullDataset = new FSDatasetInstances.LAION_10M_Dataset(publicQueries);
+        Dataset pcaDataset = new FSDatasetInstances.LAION_10M_PCA256Dataset();
 //        Dataset fullDataset = new M2DatasetInstanceSingularizator.DeCAF20MDataset();
 //        Dataset pcaDataset = new FSDatasetInstanceSingularizator.DeCAF20M_PCA256Dataset();
         run(fullDataset, pcaDataset);

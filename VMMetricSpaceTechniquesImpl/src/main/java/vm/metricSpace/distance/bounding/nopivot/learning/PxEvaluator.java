@@ -42,8 +42,7 @@ public class PxEvaluator {
         this.distInterval = distInterval;
         this.sketchLength = sketchLength;
         this.minNumberOfDistsPerBucket = minNumberOfExampleForBitToCount;
-        Iterator<Object> it = sketchesDataset.getMetricObjectsFromDataset();
-        sketches = ToolsMetricDomain.getMetricObjectsAsIdDataMap(sketchesDataset.getMetricSpace(), it);
+        sketches = ToolsMetricDomain.getMetricObjectsAsIdDataMap(sketchesDataset);
         hammingDF = sketchesDataset.getDistanceFunction();
     }
 
@@ -83,7 +82,7 @@ public class PxEvaluator {
                 threadPool.execute(() -> {
                     float origDist = fullDistFunc.getDistance(o1Data, o2Data);
                     origDist = Math.max(origDist, 0);
-                    origDist = vm.math.Tools.round(origDist, distInterval, true);
+                    origDist = vm.mathtools.Tools.round(origDist, distInterval, true);
                     float hamDistRelative = hammingDF.getDistance(sk1, sk2) / sketchLength;
                     addValueToMap(sumOfProbabilities, origDist, hamDistRelative);
                     addValueToMap(counts, origDist, 1f);

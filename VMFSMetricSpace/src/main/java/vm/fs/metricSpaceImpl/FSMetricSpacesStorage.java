@@ -25,18 +25,16 @@ import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.AbstractMetricSpacesStorage;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.data.toStringConvertors.MetricObjectDataToStringInterface;
+import vm.metricSpace.distance.DistanceFunctionInterface;
 
 /**
  *
  * @author xmic
  * @param <T>
  */
-public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
+public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage<T> {
 
     public static final Logger LOG = Logger.getLogger(FSMetricSpacesStorage.class.getName());
-
-    protected final AbstractMetricSpace metricSpace;
-    protected final MetricObjectDataToStringInterface<T> dataSerializator;
 
     private VMMVStorage singularizatorOfDiskStorage = null;
 
@@ -46,11 +44,11 @@ public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
      * the "key-value" format
      *
      * @param metricSpace
-     * @param dataSerializator transforms T to string and vice versa
+     * @param dataSerializator transforms T to string and vice versa see
+     * @SingularisedConvertors
      */
     public FSMetricSpacesStorage(AbstractMetricSpace<T> metricSpace, MetricObjectDataToStringInterface<T> dataSerializator) {
-        this.metricSpace = metricSpace;
-        this.dataSerializator = dataSerializator;
+        super(metricSpace, dataSerializator);
     }
 
     /**
@@ -59,6 +57,10 @@ public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
      */
     public FSMetricSpacesStorage(MetricObjectDataToStringInterface<T> dataSerializator) {
         this(new FSMetricSpaceImpl<T>(), dataSerializator);
+    }
+
+    public FSMetricSpacesStorage(DistanceFunctionInterface<T> df, MetricObjectDataToStringInterface<T> dataSerializator) {
+        this(new FSMetricSpaceImpl<T>(df), dataSerializator);
     }
 
     @Override
@@ -78,15 +80,15 @@ public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
         return Tools.getObjectsFromIterator(it);
     }
 
-    protected Iterator<Object> getIteratorOfObjects(String folder, String file, Object... params) {
-        File f = getFileForObjects(folder, file, false);
+    protected Iterator<Object> getIteratorOfObjects(String folder, String setName, Object... params) {
+        File f = getFileForObjects(folder, setName, false);
         if (!f.exists()) {
+            LOG.log(Level.SEVERE, "No file for objects {0} exists", f.getAbsolutePath());
             if (!folder.equals(FSGlobal.DATASET_FOLDER)) {
-                LOG.log(Level.SEVERE, "No file for objects {0} exists", f.getAbsolutePath());
                 return null;
             }
             if (singularizatorOfDiskStorage == null) {
-                singularizatorOfDiskStorage = new VMMVStorage(file, false);
+                singularizatorOfDiskStorage = new VMMVStorage(setName, false);
             }
             if (singularizatorOfDiskStorage == null) {
                 LOG.log(Level.SEVERE, "No file for objects {0} exists", f.getAbsolutePath());
@@ -110,15 +112,19 @@ public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
         this.singularizatorOfDiskStorage = singularizatorOfDiskStorage;
     }
 
-    public Iterator<Object> getIteratorOfObjects(File f, Object... params) {
+    public Iterator getIteratorOfObjects(File f, Object... params) {
         BufferedReader br;
         try {
-            br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(f))));
+            if (f.getName().toLowerCase().endsWith(".gz")) {
+                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(f))));
+            } else {
+                br = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+            }
             int count = params.length > 0 && params[0] instanceof Integer ? (int) params[0] : Integer.MAX_VALUE;
             if (count < 0) {
                 count = Integer.MAX_VALUE;
             }
-            return new MetricObjectFileIterator(br, count);
+            return getIteratorForReader(br, count, f.getAbsolutePath());
         } catch (IOException ex) {
             Logger.getLogger(FSMetricSpacesStorage.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -137,7 +143,7 @@ public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
     public void storeObjectToDataset(Object metricObject, String datasetName, Object... additionalParamsToStoreWithNewDataset) {
         GZIPOutputStream datasetOutputStream = null;
         try {
-            File f = getFileForObjects(FSGlobal.DATA_FOLDER, datasetName, false);
+            File f = getFileForObjects(FSGlobal.DATASET_FOLDER, datasetName, false);
             datasetOutputStream = new GZIPOutputStream(new FileOutputStream(f, true), true);
             storeMetricObject(metricObject, datasetOutputStream, additionalParamsToStoreWithNewDataset);
         } catch (IOException ex) {
@@ -206,14 +212,10 @@ public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
             if (!fGZ.exists() && !willBeDeleted) {
                 LOG.log(Level.WARNING, "File on the path {0} does not exist. The params are: folder: {1}, fileName: {2}. Returning zipped file: {3}", new Object[]{f.getAbsolutePath(), folder, fileName, fGZ.getName()});
             }
-            if (fGZ.exists() && Files.isSymbolicLink(fGZ.toPath()) && (folder.equals(FSGlobal.DATASET_FOLDER) || folder.equals(FSGlobal.DATASET_MVSTORAGE_FOLDER))) {
-                LOG.log(Level.WARNING, "Returned file {0} is a symbolic file. Reading might be slow", fGZ.getAbsolutePath());
-            }
+            checkBigTertiaryDatasetStorage(fGZ);
             return fGZ;
         }
-        if (Files.isSymbolicLink(f.toPath())) {
-            LOG.log(Level.WARNING, "Returned file {0} is a symbolic file. Reading might be slow", f.getAbsolutePath());
-        }
+        checkBigTertiaryDatasetStorage(f);
         return f;
     }
 
@@ -332,7 +334,7 @@ public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
     public void updateDatasetSize(String datasetName, int count) {
         FileOutputStream os = null;
         try {
-            File f = getFileForObjects(FSGlobal.DATASET_FOLDER, datasetName + "_size.txt", true);
+            File f = getFileForObjects(FSGlobal.DATASET_FOLDER, datasetName + "_size.txt", false);
             os = new FileOutputStream(f);
             byte[] bytes = Integer.toString(count).getBytes();
             os.write(bytes);
@@ -347,7 +349,37 @@ public class FSMetricSpacesStorage<T> extends AbstractMetricSpacesStorage {
         }
     }
 
-    private class MetricObjectFileIterator<T> implements Iterator<AbstractMap.SimpleEntry<String, T>> {
+    public static void checkBigTertiaryDatasetStorage(File fGZ) {
+        File folder = fGZ.getParentFile();
+        File datasetFolder = new File(FSGlobal.DATASET_FOLDER);
+        File keyValueFolder = new File(FSGlobal.DATASET_MVSTORAGE_FOLDER);
+        if (fGZ.exists() && Files.isSymbolicLink(fGZ.toPath()) && (folder.equals(datasetFolder) || folder.equals(keyValueFolder))) {
+            LOG.log(Level.WARNING, "Returned file {0} is a symbolic file. Reading might be slow", fGZ.getAbsolutePath());
+            try {
+                String realPath = fGZ.toPath().toRealPath().toFile().getAbsolutePath();
+                boolean startsWith = realPath.toLowerCase().contains("nas");
+                if (startsWith && FSGlobal.STOP_ON_READING_FROM_NAS) {
+                    System.err.println("");
+                    throw new RuntimeException("File " + realPath + " is on the tertiary storage. Stopping. The symbolic link path is " + fGZ.getAbsolutePath());
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(FSMetricSpacesStorage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    /**
+     *
+     * @param br
+     * @param count
+     * @param filePath allows to distinguish in overriden methods
+     * @return
+     */
+    protected Iterator<AbstractMap.SimpleEntry<String, T>> getIteratorForReader(BufferedReader br, int count, String filePath) {
+        return new MetricObjectFileIterator(br, count);
+    }
+
+    protected class MetricObjectFileIterator<T> implements Iterator<AbstractMap.SimpleEntry<String, T>> {
 
         protected AbstractMap.SimpleEntry<String, T>[] nextObjects;
         private int pointer;

@@ -3,7 +3,7 @@ package vm.fs.main.objTransforms.learning;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.dataTransforms.FSSVDStorageImpl;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;

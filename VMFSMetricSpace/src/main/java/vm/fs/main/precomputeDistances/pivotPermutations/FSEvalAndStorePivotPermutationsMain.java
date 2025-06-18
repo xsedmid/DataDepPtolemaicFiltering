@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 import vm.datatools.Tools;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.precomputedDists.FSPrecomputedDistancesMatrixLoaderImpl;
 import vm.fs.store.precomputedDists.permutations.FSPrecomputedPivotPermutationsLoaderImpl;
 import vm.metricSpace.AbstractMetricSpace;
@@ -32,12 +32,12 @@ public class FSEvalAndStorePivotPermutationsMain {
         boolean publicQueries = true;
         int pivotCount = 256;
         Dataset[] datasets = new Dataset[]{
-            new FSDatasetInstanceSingularizator.DeCAFDataset(),
-            new FSDatasetInstanceSingularizator.SIFTdataset(),
-            new FSDatasetInstanceSingularizator.MPEG7dataset(),
-            new FSDatasetInstanceSingularizator.RandomDataset20Uniform(),
-            new FSDatasetInstanceSingularizator.LAION_10M_Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_10M_GHP_50_512Dataset(publicQueries)
+            new FSDatasetInstances.DeCAFDataset(),
+            new FSDatasetInstances.SIFTdataset(),
+            new FSDatasetInstances.MPEG7dataset(),
+            new FSDatasetInstances.RandomDataset20Uniform(),
+            new FSDatasetInstances.LAION_10M_Dataset(publicQueries),
+            new FSDatasetInstances.LAION_10M_GHP_50_512Dataset(publicQueries)
         };
         for (Dataset dataset : datasets) {
             run(dataset, pivotCount);

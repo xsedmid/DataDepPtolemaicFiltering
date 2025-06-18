@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
+import vm.metricSpace.DatasetOfCandidates;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.search.algorithm.SearchingAlgorithm;
 import static vm.search.algorithm.SearchingAlgorithm.adjustAndReturnSearchRadiusAfterAddingOne;
@@ -63,24 +64,37 @@ public class GroundTruthEvaluator<T> extends SearchingAlgorithm<T> {
         range = Float.MAX_VALUE;
     }
 
-    public TreeSet<Entry<Object, Float>>[] evaluateIteratorSequentially(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
-        Object[] concatArrays = Tools.concatArrays(1, paramsToStoreWithGroundTruth);
-        return completeKnnFilteringWithQuerySet(metricSpace, queryObjects, k, itOverMetricObjects, concatArrays);
+    public TreeSet<Entry<Comparable, Float>>[] evaluateIteratorSequentially(Dataset dataset) {
+        TreeSet<Map.Entry<Comparable, Float>>[] ret = null;
+        int repetitions = SearchingAlgorithm.getNumberOfRepetitionsDueToCaching(dataset);
+        if (dataset instanceof DatasetOfCandidates) {
+            int precomputedDatasetSize = dataset.getPrecomputedDatasetSize();
+            Map<Integer, TreeSet<Entry<Comparable, Float>>[]> allWithSteps = null;
+            for (int i = 0; i < repetitions; i++) {
+                allWithSteps = evaluateIteratorsSequentiallyForEachQuery(dataset, queryObjects, k, true, precomputedDatasetSize);
+            }
+            ret = allWithSteps.get(precomputedDatasetSize);
+        } else {
+            for (int i = 0; i < repetitions; i++) {
+                ret = completeKnnFilteringWithQuerySet(metricSpace, queryObjects, k, dataset.getMetricObjectsFromDataset(), 1);
+            }
+        }
+        return ret;
     }
 
     public TreeSet<Entry<Object, Float>>[] evaluateIteratorInParallel(Iterator<Object> itOverMetricObjects, Object... paramsToStoreWithGroundTruth) {
-        Object[] concatArrays = Tools.concatArrays(vm.javatools.Tools.PARALELISATION, paramsToStoreWithGroundTruth);
+        Object[] concatArrays = Tools.addToArray(vm.javatools.Tools.PARALELISATION, paramsToStoreWithGroundTruth);
         return completeKnnFilteringWithQuerySet(metricSpace, queryObjects, k, itOverMetricObjects, concatArrays);
     }
 
     @Override
     public TreeSet<Map.Entry<Comparable, Float>> completeKnnSearch(AbstractMetricSpace<T> metricSpace, Object q, int k, Iterator<Object> objects, Object... params) {
         long t = -System.currentTimeMillis();
-        TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
+        TreeSet<Map.Entry<Comparable, Float>> ret = params.length == 0 || params[0] == null ? new TreeSet<>(new Tools.MapByFloatValueComparator()) : (TreeSet<Map.Entry<Comparable, Float>>) params[0];
         T qData = metricSpace.getDataOfMetricObject(q);
         Comparable qId = metricSpace.getIDOfMetricObject(q);
         int distComps = 0;
-        float qRange = range;
+        float qRange = adjustAndReturnSearchRadiusAfterAddingOne(ret, k, range);
         objectsLoop:
         while (objects.hasNext()) {
             Object o = objects.next();

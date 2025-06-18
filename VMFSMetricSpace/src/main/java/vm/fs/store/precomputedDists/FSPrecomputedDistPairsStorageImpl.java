@@ -73,7 +73,8 @@ public class FSPrecomputedDistPairsStorageImpl extends AbstractPrecomputedPairsO
         try {
             File file = getFileForResults(false);
             if (!file.exists()) {
-                throw new Error("File with the precomputed distances does no exists for resultsName " + resultsName + ", o count" + oSize + ", q count " + qSize);
+                LOG.log(Level.SEVERE, "File with the precomputed distances does no exists for resultsName {0}, o count{1}, q count {2}", new Object[]{resultsName, oSize, qSize});
+                return null;
             }
             Comparator<Map.Entry<String, Float>> comp = new Tools.MapByFloatValueComparator<>();
             TreeSet<Map.Entry<String, Float>> ret = new TreeSet(comp);
@@ -94,7 +95,9 @@ public class FSPrecomputedDistPairsStorageImpl extends AbstractPrecomputedPairsO
             Logger.getLogger(FSPrecomputedDistPairsStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                br.close();
+                if (br != null) {
+                    br.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(FSPrecomputedDistPairsStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
             }

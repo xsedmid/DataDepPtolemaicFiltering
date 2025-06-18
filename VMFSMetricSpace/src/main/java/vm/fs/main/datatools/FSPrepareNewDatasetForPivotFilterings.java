@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import vm.fs.FSGlobal;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.main.datatools.storage.VMMVStorageInsertMain;
 import vm.fs.main.precomputeDistances.FSEvalAndStoreObjectsToPivotsDistsMain;
 import vm.fs.main.precomputeDistances.FSEvalAndStoreSampleOfSmallestDistsMain;
@@ -21,33 +21,37 @@ import vm.metricSpace.DatasetOfCandidates;
 import vm.search.algorithm.impl.GroundTruthEvaluator;
 
 /**
+ * No not run this in paralel for more datasets It is already paralelised in
+ * many ways so your PC would stuck.
  *
  * @author au734419
  */
 public class FSPrepareNewDatasetForPivotFilterings {
 
-    private static Boolean skipEverythingEvaluated = false;
+    private static Boolean skipEverythingEvaluated = true;
 
     public static void setSkipEverythingEvaluated(Boolean skipEverythingEvaluated) {
         FSPrepareNewDatasetForPivotFilterings.skipEverythingEvaluated = skipEverythingEvaluated;
     }
-    public static final Integer MIN_NUMBER_OF_OBJECTS_TO_CREATE_KEY_VALUE_STORAGE = 50 * 1000 * 1000; // decide by yourself, smaller datasets can be kept as a map in the main memory only, and creation of the map is efficient. This is implemented, e.g., in FSFloatVectorDataset and FSHammingSpaceDataset in class FSDatasetInstanceSingularizator
-    public static final Integer MIN_DATASET_SIZE_TO_STORE_OBJECT_PIVOT_DISTS = 50 * 1000 * 1000; // decide by yourself  according to the cost of a distance computation
+    public static final Integer MIN_NUMBER_OF_OBJECTS_TO_CREATE_KEY_VALUE_STORAGE = 10 * 1000 * 1000; // decide by yourself, smaller datasets can be kept as a map in the main memory only, and creation of the map is efficient. This is implemented, e.g., in FSFloatVectorDataset and FSHammingSpaceDataset in class FSDatasetInstanceSingularizator
     public static final Logger LOG = Logger.getLogger(FSPrepareNewDatasetForPivotFilterings.class.getName());
 
     public static void main(String[] args) throws FileNotFoundException {
         boolean publicQueries = true;
-        Dataset[] datasets = { //            new M2DatasetInstanceSingularizator.DeCAF100MDatasetAndromeda(),
-        //            new FSDatasetInstanceSingularizator.Faiss_Clip_100M_PCA256_Candidates()
-        //                    new FSDatasetInstanceSingularizator.FaissDyn_Clip_100M_PCA256_Candidates(300),
-        //            new FSDatasetInstanceSingularizator.Faiss_DeCAF_100M_Candidates()
-        //            new FSDatasetInstanceSingularizator.DeCAF100M_Dataset()
-        //            new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset()
-        //                        new FSDatasetInstanceSingularizator.Faiss_DeCAF_100M_PCA256_Candidates(),
+        Dataset[] datasets = {
+//            new FSDatasetInstances.LAION_30M_PCA256Dataset(),
+//            new FSDatasetInstances.LAION_100M_PCA256Dataset()
+//            new FSDatasetInstances.MOCAP10FPS(),
+//            new FSDatasetInstances.MOCAP30FPS()
+//            FSLayersKasperStorage.createDataset(FSLayersKasperStorage.TYPE_0_small, FSLayersKasperStorage.DIMENSION_0_small)
+//            new FSDatasetInstances.DeCAF20M_PCA256Dataset(),
+            new FSDatasetInstances.Yahoo100M_1MSubset_Dataset()
+//            new FSDatasetInstanceSingularizator.DeCAF100M_Dataset(),
+//            new FSDatasetInstanceSingularizator.DeCAF100M_PCA256Dataset(),
         //            new FSDatasetInstanceSingularizator.Faiss_Clip_100M_PCA256_Candidates(),
-        //                    new FSDatasetInstanceSingularizator.Faiss_DeCAF_100M_PCA256_Candidates()
-        //            new FSDatasetInstanceSingularizator.DeCAF100M_PCA256Dataset()
-        //            new FSDatasetInstanceSingularizator.LAION_100M_PCA256Dataset(),
+        //            new FSDatasetInstanceSingularizator.Faiss_DeCAF_100M_Candidates(),
+        //            new FSDatasetInstanceSingularizator.FaissDyn_Clip_100M_PCA256_Candidates(300),
+        //            new FSDatasetInstanceSingularizator.Faiss_DeCAF_100M_PCA256_Candidates(),
         //            new FSDatasetInstanceSingularizator.RandomDataset10Uniform(),
         //            new FSDatasetInstanceSingularizator.RandomDataset15Uniform(),
         //            new FSDatasetInstanceSingularizator.RandomDataset20Uniform(),
@@ -61,20 +65,14 @@ public class FSPrepareNewDatasetForPivotFilterings {
         //            new FSDatasetInstanceSingularizator.RandomDataset80Uniform(),
         //            new FSDatasetInstanceSingularizator.RandomDataset90Uniform(),
         //            new FSDatasetInstanceSingularizator.RandomDataset100Uniform()
-        //            new FSDatasetInstanceSingularizator.DeCAFDataset(),
         //            new FSDatasetInstanceSingularizator.MPEG7dataset(),
         //            new FSDatasetInstanceSingularizator.SIFTdataset(),
-        //            new FSDatasetInstanceSingularizator.LAION_100M_Dataset(publicQueries),
-        //            new FSDatasetInstanceSingularizator.LAION_30M_Dataset(publicQueries),
         //            new FSDatasetInstanceSingularizator.LAION_10M_Dataset(publicQueries),
+        //            new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset(),
+        //            new FSDatasetInstanceSingularizator.LAION_100M_Dataset(publicQueries),
         //            new FSDatasetInstanceSingularizator.LAION_100M_PCA256Dataset(),
-        //            new FSDatasetInstanceSingularizator.LAION_30M_PCA256Dataset()
         //            new FSDatasetInstanceSingularizator.LAION_10M_Dataset_Euclid(publicQueries),
-        //            new FSDatasetInstanceSingularizator.LAION_30M_Dataset_Euclid(publicQueries),
-        //            new FSDatasetInstanceSingularizator.LAION_100M_Dataset_Euclid(publicQueries)            
-        //            new FSDatasetInstanceSingularizator.DeCAF_PCA1540Dataset(),
-        //                    new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset(),
-        //                    new FSDatasetInstanceSingularizator.LAION_10M_Dataset(true),
+        //            new FSDatasetInstanceSingularizator.LAION_100M_Dataset_Euclid(publicQueries)
         //            new FSDatasetInstanceSingularizator.LAION_10M_Dataset_Dot(true)
         //            new FSDatasetInstanceSingularizator.LAION_10M_Dataset_Euclid(true)
         //                    new FSDatasetInstanceSingularizator.LAION_10M_Dataset_Angular(true)
@@ -82,6 +80,17 @@ public class FSPrepareNewDatasetForPivotFilterings {
         for (Dataset dataset : datasets) {
             run(dataset);
         }
+
+//        int dim = 8;
+//        while (dim < 1500) {
+//            for (int type = 0; type < 4; type++) {
+//                Dataset<float[]> dataset = FSMetricSpaceKasperStorage.createDataset(type, dim);
+//                if (dataset != null) {
+//                    run(dataset);
+//                }
+//            }
+//            dim = dim * 2;
+//        }
     }
 
     private static void run(Dataset dataset) throws FileNotFoundException {
@@ -90,15 +99,17 @@ public class FSPrepareNewDatasetForPivotFilterings {
         if (dataset instanceof DatasetOfCandidates) {
             origDataset = ((DatasetOfCandidates) dataset).getOrigDataset();
             plotDistanceDensity(origDataset);
+        } else {
+            plotDistanceDensity(dataset);
         }
-//        plotDistanceDensity(dataset);
-//        selectRandomPivotsAndQueryObjects(origDataset);
-//        evaluateGroundTruth(dataset);
+        selectRandomPivotsAndQueryObjects(origDataset);
+        evaluateGroundTruth(dataset, GroundTruthEvaluator.K_IMPLICIT_FOR_GROUND_TRUTH);
         evaluateSampleOfSmallestDistances(dataset);
-//        precomputeObjectToPivotDists(origDataset);
-//        createKeyValueStorageForBigDataset(origDataset);
+        precomputeObjectToPivotDists(origDataset);
+        createKeyValueStorageForBigDataset(origDataset);
         learnDataDependentMetricFiltering(dataset);
         learnDataDependentPtolemaicFiltering(dataset);
+        evaluateGroundTruth(dataset, GroundTruthEvaluator.K_IMPLICIT_FOR_QUERIES);
     }
 
     /**
@@ -111,7 +122,7 @@ public class FSPrepareNewDatasetForPivotFilterings {
         if (skipEverythingEvaluated) {
             return true;
         }
-        if (!FSGlobal.ASK_FOR_EXISTENCE) {
+        if (!FSGlobal.askWhenGoingToOverrideFile) {
             return false;
         }
         try {
@@ -138,34 +149,30 @@ public class FSPrepareNewDatasetForPivotFilterings {
     }
 
     public static final void plotDistanceDensity(Dataset dataset) {
-        boolean prohibited = PrintAndPlotDDOfDatasetMain.existsForDataset(dataset);
+        boolean prohibited = FSPrintAndPlotDDOfDatasetMain.existsForDataset(dataset);
         if (!prohibited) {
             LOG.log(Level.INFO, "Dataset: {0}, printing distance density plots", dataset.getDatasetName());
-            PrintAndPlotDDOfDatasetMain.run(dataset);
+            FSPrintAndPlotDDOfDatasetMain.run(dataset);
         } else {
             LOG.log(Level.INFO, "Dataset: {0}, distance density plot already exists", dataset.getDatasetName());
         }
     }
 
     private static void selectRandomPivotsAndQueryObjects(Dataset dataset) {
-        boolean exists = dataset.getPivots(1) != null;
+        boolean existsPivots = dataset.getPivots(1) != null;
         String datasetName = dataset.getDatasetName();
-        if (!exists) {
-            LOG.log(Level.INFO, "Dataset: {0}, trying to select pivots and queries", datasetName);
+        if (!existsPivots) {
+            LOG.log(Level.INFO, "Dataset: {0}, trying to select pivots", datasetName);
             FSSelectRandomQueryObjectsAndPivotsFromDatasetMain.run(dataset);
         } else {
             LOG.log(Level.INFO, "Dataset: {0}, pivots already preselected", datasetName);
-            List queryObjects = dataset.getQueryObjects();
-            exists = queryObjects != null && !queryObjects.isEmpty();
-            if (!exists) {
+            List queryObjects = dataset.getQueryObjects(1);
+            boolean existsQueries = queryObjects != null && !queryObjects.isEmpty();
+            if (!existsQueries) {
                 LOG.log(Level.INFO, "Dataset: {0}, trying to select queries", datasetName);
                 FSSelectRandomQueryObjectsAndPivotsFromDatasetMain.run(dataset, FSSelectRandomQueryObjectsAndPivotsFromDatasetMain.IMPLICIT_NUMBER_OF_QUERIES, 0);
             }
         }
-    }
-
-    public static final void evaluateGroundTruth(Dataset dataset) {
-        evaluateGroundTruth(dataset, GroundTruthEvaluator.K_IMPLICIT_FOR_GROUND_TRUTH);
     }
 
     public static final void evaluateGroundTruth(Dataset dataset, int k) {
@@ -201,8 +208,7 @@ public class FSPrepareNewDatasetForPivotFilterings {
             LOG.log(Level.WARNING, "Dists to pivots already evaluated for dataset {0}", datasetName);
             prohibited = askForRewriting("Dists to pivots", dataset);
         }
-        int datasetSize = dataset.getPrecomputedDatasetSize();
-        if (!prohibited && datasetSize >= MIN_DATASET_SIZE_TO_STORE_OBJECT_PIVOT_DISTS) {
+        if (!prohibited && dataset.shouldStoreDistsToPivots()) {
             LOG.log(Level.INFO, "Dataset: {0}, evaluating objects to pivot distances", datasetName);
             FSEvalAndStoreObjectsToPivotsDistsMain.run(dataset, dataset.getRecommendedNumberOfPivotsForFiltering());
         }
@@ -236,8 +242,7 @@ public class FSPrepareNewDatasetForPivotFilterings {
 
     private static void createKeyValueStorageForBigDataset(Dataset dataset) {
         String datasetName = dataset.getDatasetName();
-        int datasetSize = dataset.getPrecomputedDatasetSize();
-        if (datasetSize >= MIN_NUMBER_OF_OBJECTS_TO_CREATE_KEY_VALUE_STORAGE) {
+        if (dataset.shouldCreateKeyValueStorage()) {
             boolean prohibited = dataset.hasKeyValueStorage();
             if (prohibited) {
                 LOG.log(Level.WARNING, "The key value storage already exists for dataset {0}", datasetName);

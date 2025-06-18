@@ -13,14 +13,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.math.Tools;
+import vm.mathtools.Tools;
 import vm.metricSpace.distance.DistanceFunctionInterface;
 import vm.metricSpace.distance.storedPrecomputedDistances.MainMemoryStoredPrecomputedDistances;
 
@@ -65,14 +64,8 @@ public class ToolsMetricDomain {
      */
     public static SortedMap<Float, Float> createDistanceDensityPlot(Dataset dataset, int objCount, int distCount, List<Object[]> idsOfRandomPairs) {
         float[] distances = dataset.evaluateSampleOfRandomDistances(objCount, distCount, idsOfRandomPairs);
-        vm.math.Tools.getIDim(vm.datatools.DataTypeConvertor.floatsToDoubles(distances), true);
+        vm.mathtools.Tools.getIDim(vm.datatools.DataTypeConvertor.floatsToDoubles(distances), true);
         return createDistanceDensityPlot(distances);
-    }
-
-    private static float basicInterval;
-
-    public static float getBasicInterval() {
-        return basicInterval;
     }
 
     /**
@@ -80,28 +73,28 @@ public class ToolsMetricDomain {
      * metricObjectsSample
      *
      * @param distances
-     * @param pairsOfExaminedIDs if not null, adds all examined pairs of objects
      * @return
      */
-    public static TreeMap<Float, Float> createDistanceDensityPlot(float[] distances) {
-        int distCount = distances.length;
-        TreeMap<Float, Float> absoluteCounts = new TreeMap<>();
-        basicInterval = computeBasicDistInterval(distances);
-        LOG.log(Level.INFO, "Basic interval is set to {0}", basicInterval);
-        for (float distance : distances) {
-            distance = Tools.round(distance, basicInterval, false);
-            if (!absoluteCounts.containsKey(distance)) {
-                absoluteCounts.put(distance, 1f);
-            } else {
-                Float count = absoluteCounts.get(distance);
-                absoluteCounts.put(distance, count + 1);
-            }
-        }
-        TreeMap<Float, Float> histogram = new TreeMap<>();
-        for (Float key : absoluteCounts.keySet()) {
-            histogram.put(key, absoluteCounts.get(key) / distCount);
-        }
-        return histogram;
+    public static SortedMap<Float, Float> createDistanceDensityPlot(float[] distances) {
+        return vm.mathtools.Tools.createHistogramOfValues(distances);
+//        int distCount = distances.length;
+//        TreeMap<Float, Float> absoluteCounts = new TreeMap<>();
+//        basicInterval = Tools.computeBasicXIntervalForHistogram(distances);
+//        LOG.log(Level.INFO, "Basic interval is set to {0}", basicInterval);
+//        for (float distance : distances) {
+//            distance = Tools.round(distance, basicInterval, false);
+//            if (!absoluteCounts.containsKey(distance)) {
+//                absoluteCounts.put(distance, 1f);
+//            } else {
+//                Float count = absoluteCounts.get(distance);
+//                absoluteCounts.put(distance, count + 1);
+//            }
+//        }
+//        TreeMap<Float, Float> histogram = new TreeMap<>();
+//        for (Float key : absoluteCounts.keySet()) {
+//            histogram.put(key, absoluteCounts.get(key) / distCount);
+//        }
+//        return histogram;
     }
 
     public static SortedMap<Float, Float> createDistanceDensityPlot(Collection<Float> distances) {
@@ -144,6 +137,19 @@ public class ToolsMetricDomain {
 
     public static <T> Map<Comparable, Object> getMetricObjectsAsIdObjectMap(AbstractMetricSpace<T> metricSpace, Collection<Object> metricObjects) {
         return getMetricObjectsAsIdObjectMap(metricSpace, metricObjects.iterator());
+    }
+
+    private static final Map cache = new HashMap<>();
+
+    public static <T> Map<Comparable, T> getMetricObjectsAsIdDataMap(Dataset<T> dataset) {
+        if (cache.containsKey(dataset)) {
+            return (Map<Comparable, T>) cache.get(dataset);
+        }
+        AbstractMetricSpace<T> metricSpace = dataset.getMetricSpace();
+        Iterator<Object> it = dataset.getMetricObjectsFromDataset(-1);
+        Map<Comparable, T> ret = getMetricObjectsAsIdDataMap(metricSpace, it);
+        cache.put(dataset, ret);
+        return ret;
     }
 
     /**
@@ -390,6 +396,23 @@ public class ToolsMetricDomain {
         return pd;
     }
 
+    public static float[] getVectorsLengthAsArray(List batch, AbstractMetricSpace metricSpace) {
+        float[] ret = new float[batch.size()];
+        for (int i = 0; i < batch.size(); i++) {
+            Object object = batch.get(i);
+            Comparable id = metricSpace.getIDOfMetricObject(object);
+            float length = 0;
+            float[] vector = (float[]) metricSpace.getDataOfMetricObject(object); // must be the space of floats
+            for (int j = 0; j < vector.length; j++) {
+                float f = vector[j];
+                length += f * f;
+            }
+            length = (float) Math.sqrt(length);
+            ret[i] = length;
+        }
+        return ret;
+    }
+
     public static Map<Comparable, Float> getVectorsLength(List batch, AbstractMetricSpace metricSpace) {
         Map<Comparable, Float> ret = new HashMap<>();
         for (Object object : batch) {
@@ -443,47 +466,8 @@ public class ToolsMetricDomain {
         return ret;
     }
 
-    private static float computeBasicDistInterval(float[] distances) {
-        float max = (float) Tools.getMax(distances);
-        return computeBasicDistInterval(max);
-    }
-
     public static float computeBasicDistInterval(float max) {
-        int exp = 0;
-        while (max < 1) {
-            max *= 10;
-            exp++;
-        }
-        float maxCopy = max;
-        int untilZero = (int) maxCopy;
-        float prev;
-        int counter = 0;
-        if (untilZero < 0) {
-            while (untilZero != maxCopy) {
-                untilZero = (int) (maxCopy * 10);
-                maxCopy *= 10;
-                counter--;
-            }
-        }
-        prev = (int) maxCopy;
-        untilZero = (int) (maxCopy / 10);
-        while (untilZero != 0) {
-            prev = untilZero;
-            untilZero = (int) (maxCopy / 10);
-            maxCopy /= 10;
-            counter++;
-        }
-        counter -= 3;
-        float ret = (float) (prev * Math.pow(10, counter));
-        while (80 * ret > max) {
-            ret /= 1.2;
-        }
-        while (200 * ret < max) {
-            ret *= 1.2;
-        }
-        ret = (float) (ret / Math.pow(10, exp));
-        ret = Tools.ifSmallerThanOneRoundToFirstNonzeroFloatingNumber(ret);
-        return ret;
+        return Tools.computeBasicXIntervalForHistogram(0, max);
     }
 
     public static List filterObjectsByIDs(AbstractMetricSpace metricSpace, List objects, Object... ids) {
@@ -532,7 +516,7 @@ public class ToolsMetricDomain {
             keyValueStorage = dataset.getKeyValueStorage();
         }
         if (keyValueStorage == null) {
-            keyValueStorage = ToolsMetricDomain.getMetricObjectsAsIdDataMap(metricSpace, dataset.getMetricObjectsFromDataset());
+            keyValueStorage = ToolsMetricDomain.getMetricObjectsAsIdDataMap(dataset);
         }
         List<Object> ret = new ArrayList<>();
         for (Comparable id : setOfIDs) {

@@ -4,7 +4,7 @@
  */
 package vm.fs.main.search.perform;
 
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.queryResults.FSNearestNeighboursStorageImpl;
 import vm.fs.store.queryResults.recallEvaluation.FSRecallOfCandidateSetsStorageImpl;
 import vm.fs.store.partitioning.FSGRAPPLEPartitioningStorage;
@@ -24,7 +24,7 @@ public class EvaluateQuerySetByIndexAndSimpleReranking {
         int k = 100;
         int kCandSetMaxSize = 50000;
         Dataset[] datasets = new Dataset[]{
-            new FSDatasetInstanceSingularizator.DeCAFDataset()
+            new FSDatasetInstances.DeCAFDataset()
 //            new FSDatasetInstanceSingularizator.LAION_10M_Dataset(),
 //            new FSDatasetInstanceSingularizator.MPEG7dataset(),
 //            new FSDatasetInstanceSingularizator.SIFTdataset(),

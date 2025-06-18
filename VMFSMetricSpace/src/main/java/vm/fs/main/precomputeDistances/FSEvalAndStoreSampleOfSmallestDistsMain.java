@@ -2,7 +2,7 @@ package vm.fs.main.precomputeDistances;
 
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.precomputedDists.FSPrecomputedDistPairsStorageImpl;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedPairsOfDistancesStorage;
@@ -17,7 +17,7 @@ public class FSEvalAndStoreSampleOfSmallestDistsMain {
 
     public static void main(String[] args) {
         Dataset[] datasets = new Dataset[]{
-            new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset()
+            new FSDatasetInstances.LAION_10M_PCA256Dataset()
 //            new FSDatasetInstanceSingularizator.LAION_10M_GHP_50_512Dataset(true),
 //            new FSDatasetInstanceSingularizator.LAION_10M_Dataset(true),
 //            new FSDatasetInstanceSingularizator.LAION_30M_Dataset(true),
@@ -38,8 +38,10 @@ public class FSEvalAndStoreSampleOfSmallestDistsMain {
 
     public static void run(Dataset dataset) {
         TreeSet result = dataset.evaluateSmallestDistances(AbstractPrecomputedPairsOfDistancesStorage.SAMPLE_SET_SIZE, AbstractPrecomputedPairsOfDistancesStorage.SAMPLE_QUERY_SET_SIZE, AbstractPrecomputedPairsOfDistancesStorage.IMPLICIT_K);
-        FSPrecomputedDistPairsStorageImpl storage = new FSPrecomputedDistPairsStorageImpl(dataset.getDatasetName(), AbstractPrecomputedPairsOfDistancesStorage.SAMPLE_SET_SIZE, AbstractPrecomputedPairsOfDistancesStorage.SAMPLE_QUERY_SET_SIZE);
-        storage.storePrecomputedDistances(result);
+        if (result != null) {
+            FSPrecomputedDistPairsStorageImpl storage = new FSPrecomputedDistPairsStorageImpl(dataset.getDatasetName(), AbstractPrecomputedPairsOfDistancesStorage.SAMPLE_SET_SIZE, AbstractPrecomputedPairsOfDistancesStorage.SAMPLE_QUERY_SET_SIZE);
+            storage.storePrecomputedDistances(result);
+        }
     }
 
     public static boolean existsForDataset(Dataset dataset) {

@@ -1,6 +1,5 @@
 package vm.metricSpace;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +61,19 @@ public abstract class AbstractMetricSpace<T> {
             for (int j = 0; j < list2.size(); j++) {
                 Object o2 = list2.get(j);
                 T o2Data = getDataOfMetricObject(o2);
+                float distance = df.getDistance(o1Data, o2Data);
+                ret[i][j] = distance;
+            }
+        }
+        return ret;
+    }
+
+    public float[][] getDistanceMap(DistanceFunctionInterface<T> df, List<T> list1, List<T> list2, int list1ObjCount, int list2ObjCount) {
+        float[][] ret = new float[list1ObjCount][list2ObjCount];
+        for (int i = 0; i < list1ObjCount; i++) {
+            T o1Data = list1.get(i);
+            for (int j = 0; j < list2ObjCount; j++) {
+                T o2Data = list2.get(j);
                 float distance = df.getDistance(o1Data, o2Data);
                 ret[i][j] = distance;
             }

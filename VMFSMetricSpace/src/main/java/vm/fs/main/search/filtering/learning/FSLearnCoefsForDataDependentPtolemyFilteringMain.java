@@ -5,14 +5,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.auxiliaryForDistBounding.FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl;
 import static vm.fs.store.auxiliaryForDistBounding.FSPtolemyInequalityWithLimitedAnglesCoefsStorageImpl.getFile;
 import vm.fs.store.precomputedDists.FSPrecomputedDistPairsStorageImpl;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.distance.bounding.twopivots.learning.LearningCoefsForPtolemyInequalityWithLimitedAngles;
 import vm.metricSpace.distance.storedPrecomputedDistances.AbstractPrecomputedPairsOfDistancesStorage;
-import vm.search.algorithm.SearchingAlgorithm;
 
 /**
  *
@@ -38,7 +37,7 @@ public class FSLearnCoefsForDataDependentPtolemyFilteringMain {
             //            new FSDatasetInstanceSingularizator.DeCAF_GHP_50_256Dataset()
             //            new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_10M_GHP_50_512Dataset(true)
-            new FSDatasetInstanceSingularizator.RandomDataset20Uniform()
+            new FSDatasetInstances.RandomDataset20Uniform()
 //            new FSDatasetInstanceSingularizator.RandomDataset10Uniform(),
 //            new FSDatasetInstanceSingularizator.RandomDataset15Uniform(),
 //            new FSDatasetInstanceSingularizator.RandomDataset25Uniform(),

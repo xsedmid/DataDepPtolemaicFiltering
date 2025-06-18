@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import vm.datatools.Tools;
 import vm.fs.FSGlobal;
+import vm.fs.main.search.filtering.learning.FSLearnCoefsForDataDepenentMetricFilteringMain;
 import vm.metricSpace.AbstractMetricSpace;
 import vm.metricSpace.Dataset;
 import vm.metricSpace.ToolsMetricDomain;
@@ -55,6 +56,10 @@ public class FSTriangleInequalityWithLimitedAnglesCoefsStorageImpl implements Tr
         String ret = datasetName + "_" + pivotsCount + "pivots_" + sampleSetSize + "samples1_" + queriesSampleSize + "samples2_" + (ratioOfSmallestDists * 100) + "percentSmallest.csv";
         LOG.log(Level.INFO, "File name: {0}", ret);
         return ret;
+    }
+
+    public static DataDependentMetricFiltering getLearnedInstanceTriangleInequalityWithLimitedAngles(String resultPreffixName, int pivotsCount, Dataset dataset) {
+        return FSTriangleInequalityWithLimitedAnglesCoefsStorageImpl.getLearnedInstanceTriangleInequalityWithLimitedAngles(resultPreffixName, pivotsCount, FSLearnCoefsForDataDepenentMetricFilteringMain.SAMPLE_O_COUNT, FSLearnCoefsForDataDepenentMetricFilteringMain.SAMPLE_Q_COUNT, dataset);
     }
 
     public static DataDependentMetricFiltering getLearnedInstanceTriangleInequalityWithLimitedAngles(String resultPreffixName, int pivotsCount, int sampleSetSize, int queriesSampleSize, Dataset dataset) {

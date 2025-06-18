@@ -1,7 +1,7 @@
 package vm.fs.main.search.filtering.learning;
 
 import java.io.File;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.auxiliaryForDistBounding.FSTriangleInequalityWithLimitedAnglesCoefsStorageImpl;
 import vm.fs.store.precomputedDists.FSPrecomputedDistPairsStorageImpl;
 import vm.metricSpace.Dataset;
@@ -36,7 +36,7 @@ public class FSLearnCoefsForDataDepenentMetricFilteringMain {
             //            new FSDatasetInstanceSingularizator.LAION_10M_PCA256Dataset(),
             //            new FSDatasetInstanceSingularizator.LAION_10M_GHP_50_512Dataset(true)
 
-            new FSDatasetInstanceSingularizator.RandomDataset20Uniform()
+            new FSDatasetInstances.RandomDataset20Uniform()
 //            new FSDatasetInstanceSingularizator.RandomDataset10Uniform(),
 //            new FSDatasetInstanceSingularizator.RandomDataset15Uniform(),
 //            new FSDatasetInstanceSingularizator.RandomDataset25Uniform(),

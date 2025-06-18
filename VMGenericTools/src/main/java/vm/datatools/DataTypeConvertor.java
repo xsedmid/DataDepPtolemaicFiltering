@@ -7,7 +7,15 @@ package vm.datatools;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -143,6 +151,15 @@ public class DataTypeConvertor {
         return ret;
     }
 
+    public static double[] floatsToDoubles(Float[] vec) {
+        double[] ret = new double[vec.length];
+        for (int i = 0; i < ret.length; i++) {
+            Float f = vec[i];
+            ret[i] = f;
+        }
+        return ret;
+    }
+
     public static double[] intsToDoubles(int[] vec) {
         double[] ret = new double[vec.length];
         for (int i = 0; i < ret.length; i++) {
@@ -209,7 +226,7 @@ public class DataTypeConvertor {
         return ret;
     }
 
-    public static String floatMatrixToCsvString(float[][] array, String columnDelimiter) {
+    public static String floatMatrixToCsvString(float[][] array, String columnDelimiter, String rowDelimiter) {
         if (array == null || array.length == 0) {
             return "";
         }
@@ -219,13 +236,17 @@ public class DataTypeConvertor {
         try {
             ret.append(DataTypeConvertor.floatsToString(array[0], columnDelimiter));
             for (int i = 1; i < array.length; i++) {
-                ret.append("\n").append(DataTypeConvertor.floatsToString(array[i], columnDelimiter));
+                ret.append(rowDelimiter).append(DataTypeConvertor.floatsToString(array[i], columnDelimiter));
             }
             return ret.toString();
         } catch (java.lang.OutOfMemoryError ex) {
             LOG.log(Level.WARNING, "Unsufficient memory to store the matrix: {0} * {1}", new Object[]{array.length, array[0].length});
         }
         return "";
+    }
+
+    public static String floatMatrixToCsvString(float[][] array, String columnDelimiter) {
+        return floatMatrixToCsvString(array, columnDelimiter, "\n");
     }
 
     public static double[][] floatMatrixToDoubleMatrix(float[][] matrix) {
@@ -298,10 +319,12 @@ public class DataTypeConvertor {
         return ret;
     }
 
-    public static float[] floatToPrimitiveArray(List<Float> list) {
+    public static float[] floatToPrimitiveArray(Collection<Float> list) {
         float[] ret = new float[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            ret[i] = list.get(i);
+        int counter = 0;
+        for (Float f : list) {
+            ret[counter] = f;
+            counter++;
         }
         return ret;
     }
@@ -325,6 +348,40 @@ public class DataTypeConvertor {
         return ret;
     }
 
+    public static float[][] longsArrayToFloats(long[][] array) {
+        float[][] ret = new float[array.length][];
+        for (int i = 0; i < array.length; i++) {
+            long[] row = array[i];
+            ret[i] = longsArrayToFloats(row);
+        }
+        return ret;
+    }
+
+    public static float[][] intsArrayToFloats(int[][] array) {
+        float[][] ret = new float[array.length][];
+        for (int i = 0; i < array.length; i++) {
+            int[] row = array[i];
+            ret[i] = intsArrayToFloats(row);
+        }
+        return ret;
+    }
+
+    public static float[] longsArrayToFloats(long[] array) {
+        float[] ret = new float[array.length];
+        for (int i = 0; i < array.length; i++) {
+            ret[i] = Float.parseFloat(Long.toString(array[i]));
+        }
+        return ret;
+    }
+
+    public static float[] intsArrayToFloats(int[] array) {
+        float[] ret = new float[array.length];
+        for (int i = 0; i < array.length; i++) {
+            ret[i] = Float.parseFloat(Long.toString(array[i]));
+        }
+        return ret;
+    }
+
     public static float[] objectsToPrimitiveFloats(Object[] array) {
         float[] ret = new float[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -333,18 +390,49 @@ public class DataTypeConvertor {
         return ret;
     }
 
-    public static Float[] objectsToObjectFloats(Object[] groupsNames) {
-        Float[] ret = new Float[groupsNames.length];
-        for (int i = 0; i < groupsNames.length; i++) {
-            ret[i] = Float.valueOf(groupsNames[i].toString());
+    public static Float[] objectsToObjectFloats(Object[] objects) {
+        Float[] ret = new Float[objects.length];
+        for (int i = 0; i < objects.length; i++) {
+            if (objects[i] == null) {
+                ret[i] = null;
+            } else {
+                ret[i] = Float.valueOf(objects[i].toString());
+            }
         }
         return ret;
     }
 
-    public static Object objectToSingularArray(Object object) {
-        Class<? extends Object> aClass = object.getClass();
-        Object ret = Array.newInstance(aClass, 1);
+    public static Integer[] objectsToIntegers(Object[] objects) {
+        Integer[] ret = new Integer[objects.length];
+        for (int i = 0; i < objects.length; i++) {
+            if (objects[i] == null) {
+                ret[i] = null;
+            } else {
+                ret[i] = Integer.valueOf(objects[i].toString());
+            }
+        }
+        return ret;
+    }
+
+    public static <T> T[] objectToSingularArray(T object) {
+        if (object == null) {
+            return null;
+        }
+        Class aClass = object.getClass();
+        T[] ret = (T[]) Array.newInstance(aClass, 1);
         Array.set(ret, 0, object);
+        return ret;
+    }
+
+    public static <T> T[] arrayToTArray(Object[] array) {
+        if (array == null) {
+            return null;
+        }
+        Class aClass = array[0].getClass();
+        T[] ret = (T[]) Array.newInstance(aClass, 1);
+        for (int i = 0; i < array.length; i++) {
+            ret[i] = (T) array[i];
+        }
         return ret;
     }
 
@@ -352,6 +440,176 @@ public class DataTypeConvertor {
         Integer[] ret = new Integer[ints.length];
         for (int i = 0; i < ints.length; i++) {
             ret[i] = ints[i];
+        }
+        return ret;
+    }
+
+    public static double floatToPreciseDouble(float f) {
+        return Double.parseDouble(Float.toString(f));
+    }
+
+    private static boolean printed = false;
+
+    public static float doubleToPreciseFloat(double d) {
+        String s = Double.toString(d);
+        float ret = Float.parseFloat(s);
+        if (s.contains("E")) {
+            String check = Float.toString(ret);
+            if (check.length() > s.length() && !printed) {
+                try {
+                    printed = true;
+                    throw new RuntimeException("Wrong memory state does not allow precise float rounding. This has no real impact on the results, but number formatting in outputs (and figures) can be damaged. Returning " + ret + " instead of " + s);
+                } catch (RuntimeException ex) {
+                    Logger.getLogger(DataTypeConvertor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return ret;
+    }
+
+    public static TreeSet<Comparable> castCell(Collection<Comparable> cell) {
+        TreeSet<Comparable> ret;
+        if (cell instanceof Set) {
+            ret = (TreeSet<Comparable>) cell;
+        } else {
+            ret = new TreeSet<>();
+            ret.addAll(cell);
+        }
+        return ret;
+    }
+
+    public static <T> Set<T> arrayToSet(T[] array) {
+        Set<T> ret = new HashSet<>();
+        ret.addAll(Arrays.asList(array));
+        return ret;
+    }
+
+    public static float dateToFloat(Date date) {
+        return date.getTime();
+    }
+
+    public static double dateToDouble(Date date) {
+        return date.getTime();
+    }
+
+    public static long[][] datesArrayToLongs(Date[][] datesArray) {
+        long[][] ret = new long[datesArray.length][];
+        for (int rowID = 0; rowID < datesArray.length; rowID++) {
+            Date[] row = datesArray[rowID];
+            ret[rowID] = DataTypeConvertor.datesArrayToLongs(row);
+        }
+        return ret;
+    }
+
+    public static float[][] datesArrayToFloats(Date[][] datesArray) {
+        long[][] tmp = DataTypeConvertor.datesArrayToLongs(datesArray);
+        float[][] ret = DataTypeConvertor.longsArrayToFloats(tmp);
+        return ret;
+    }
+
+    public static long[] datesArrayToLongs(Date[] row) {
+        long[] ret = new long[row.length];
+        for (int i = 0; i < row.length; i++) {
+            if (row[i] != null) {
+                ret[i] = row[i].getTime();
+            }
+        }
+        return ret;
+    }
+
+    public static float[] datesArrayToFloats(Date[] dates) {
+        long[] tmp = DataTypeConvertor.datesArrayToLongs(dates);
+        float[] tmp2 = DataTypeConvertor.longsArrayToFloats(tmp);
+        return tmp2;
+    }
+
+    public static <T> String arrayToString(T[] array) {
+        String s = "";
+        for (T field : array) {
+            if (field != null) {
+                s += field.toString();
+            } else {
+                String tmp = "";
+            }
+        }
+        return s;
+    }
+
+    public static List<Integer> arrayToList(int[] values) {
+        List<Integer> ret = new ArrayList<>();
+        for (int i : values) {
+            ret.add(i);
+        }
+        return ret;
+    }
+
+    public static <T> List<T> arrayToList(T[] values) {
+        List<T> ret = new ArrayList<>();
+        for (T i : values) {
+            ret.add(i);
+        }
+        return ret;
+    }
+
+    public static <T> T[] collectionToArray(Collection<T> list) {
+        return (T[]) list.toArray();
+    }
+
+    public static List<Float> arrayToList(float[] values) {
+        List<Float> ret = new ArrayList<>();
+        for (float i : values) {
+            ret.add(i);
+        }
+        return ret;
+    }
+
+    public static List<String> arrayToList(String[] values) {
+        List<String> ret = new ArrayList<>();
+        for (String i : values) {
+            ret.add(i);
+        }
+        return ret;
+    }
+
+    public static <T> TreeSet<T> arrayToSortedSet(T[] values) {
+        TreeSet<T> ret = new TreeSet<>();
+        for (T i : values) {
+            ret.add(i);
+        }
+        return ret;
+    }
+
+    public static String formatPossibleInt(float f) {
+        int i = (int) f;
+        if (i == f) {
+            return Integer.toString(i);
+        }
+        return Float.toString(f);
+    }
+
+    public static final <X, Y> SortedSet<Y> degroupCollections(Map mapToCollectionOfY) {
+        SortedSet<Y> ret = new TreeSet<>();
+        Collection<Collection<Y>> values = mapToCollectionOfY.values();
+        List<Y> arrayList = new ArrayList<>();
+        for (Collection<Y> set : values) {
+            arrayList.addAll(set);
+        }
+        ret.addAll(arrayList);
+        return ret;
+    }
+
+    public static int[] integerListToInts(List<Integer> integers) {
+        int[] ret = new int[integers.size()];
+        for (int i = 0; i < integers.size(); i++) {
+            ret[i] = integers.get(i);
+        }
+        return ret;
+    }
+
+    public static List<Float> numbersToFloats(List<Number> values) {
+        List<Float> ret = new ArrayList<>();
+        for (Number value : values) {
+            ret.add(vm.mathtools.Tools.correctPossiblyCorruptedFloat(value.floatValue()));
         }
         return ret;
     }

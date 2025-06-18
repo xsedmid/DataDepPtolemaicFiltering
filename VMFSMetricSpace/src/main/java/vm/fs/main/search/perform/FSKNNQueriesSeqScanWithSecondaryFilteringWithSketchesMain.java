@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import vm.fs.dataset.FSDatasetInstanceSingularizator;
+import vm.fs.dataset.FSDatasetInstances;
 import vm.fs.store.dataTransforms.FSGHPSketchesPivotPairsStorageImpl;
 import vm.fs.store.filtering.FSSecondaryFilteringWithSketchesStorage;
 import vm.fs.store.queryResults.FSNearestNeighboursStorageImpl;
@@ -40,16 +40,16 @@ public class FSKNNQueriesSeqScanWithSecondaryFilteringWithSketchesMain {
         int sketchLength = 192;
         boolean publicQueries = false;
         Dataset[] fullDatasets = new Dataset[]{
-            new FSDatasetInstanceSingularizator.DeCAFDataset(),
-            new FSDatasetInstanceSingularizator.LAION_100M_Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_30M_Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_10M_Dataset(publicQueries)
+            new FSDatasetInstances.DeCAFDataset(),
+            new FSDatasetInstances.LAION_100M_Dataset(publicQueries),
+            new FSDatasetInstances.LAION_30M_Dataset(publicQueries),
+            new FSDatasetInstances.LAION_10M_Dataset(publicQueries)
         };
         Dataset[] sketchesDatasets = new Dataset[]{
-            new FSDatasetInstanceSingularizator.DeCAF_GHP_50_256Dataset(),
-            new FSDatasetInstanceSingularizator.LAION_100M_GHP_50_192Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_30M_GHP_50_192Dataset(publicQueries),
-            new FSDatasetInstanceSingularizator.LAION_10M_GHP_50_192Dataset(publicQueries)
+            new FSDatasetInstances.DeCAF_GHP_50_256Dataset(),
+            new FSDatasetInstances.LAION_100M_GHP_50_192Dataset(publicQueries),
+            new FSDatasetInstances.LAION_30M_GHP_50_192Dataset(publicQueries),
+            new FSDatasetInstances.LAION_10M_GHP_50_192Dataset(publicQueries)
         };
         float[] distIntervalsForPX = new float[]{
             2,
@@ -94,7 +94,7 @@ public class FSKNNQueriesSeqScanWithSecondaryFilteringWithSketchesMain {
 
         LOG.log(Level.INFO, "Storing statistics of queries");
         FSQueryExecutionStatsStoreImpl statsStorage = new FSQueryExecutionStatsStoreImpl(fullDataset.getDatasetName(), fullDataset.getQuerySetName(), k, fullDataset.getDatasetName(), fullDataset.getQuerySetName(), filter.getTechFullName(), null);
-        statsStorage.storeStatsForQueries(alg.getDistCompsPerQueries(), alg.getTimesPerQueries());
+        statsStorage.storeStatsForQueries(alg.getDistCompsPerQueries(), alg.getTimesPerQueries(), alg.getAdditionalStats());
         statsStorage.save();
 
         LOG.log(Level.INFO, "Storing results of queries");

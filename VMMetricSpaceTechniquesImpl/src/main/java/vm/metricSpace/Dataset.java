@@ -151,7 +151,8 @@ public abstract class Dataset<T> {
     public TreeSet<Map.Entry<String, Float>> evaluateSmallestDistances(int objectCount, int queriesCount, int retSize) {
         List<Object> metricObjects = getSampleOfDataset(objectCount + queriesCount);
         if (objectCount + queriesCount > metricObjects.size()) {
-            throw new IllegalArgumentException("Unsufficient number of data objects. Need " + (objectCount + queriesCount) + ", found " + metricObjects.size());
+            LOG.log(Level.SEVERE, "Unsufficient number of data objects. Need {0}, found {1}", new Object[]{objectCount + queriesCount, metricObjects.size()});
+            return null;
         }
         List<Object> sampleObjects = metricObjects.subList(0, objectCount);
         List<Object> queriesSamples = metricObjects.subList(objectCount, objectCount + queriesCount);
@@ -231,6 +232,10 @@ public abstract class Dataset<T> {
      */
     public abstract int getRecommendedNumberOfPivotsForFiltering();
 
+    public abstract boolean shouldStoreDistsToPivots();
+
+    public abstract boolean shouldCreateKeyValueStorage();
+
     public static class StaticIteratorOfMetricObjectsMadeOfKeyValueMap<T> implements Iterator<Object> {
 
         protected final AbstractMetricSpace<T> metricSpace;
@@ -268,7 +273,7 @@ public abstract class Dataset<T> {
 
     }
 
-    private class IteratorOfMetricObjectsMadeOfKeyValueMap implements Iterator<Object> {
+    protected class IteratorOfMetricObjectsMadeOfKeyValueMap implements Iterator<Object> {
 
         protected final AbstractMetricSpace<T> metricSpace;
         private final int maxCount;

@@ -1,5 +1,6 @@
 package vm.datatools;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
@@ -30,6 +33,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -38,7 +42,7 @@ import java.util.zip.GZIPInputStream;
 public class Tools {
 
     private static final Random RANDOM = new Random();
-    private static final Logger LOG = Logger.getLogger(vm.math.Tools.class.getName());
+    private static final Logger LOG = Logger.getLogger(vm.mathtools.Tools.class.getName());
     private static final Float IMPLICIT_MAX_MEMORY_OCCUPATION_FOR_DATA_READING = 80F;
 
     public static List<String>[] parseCsvKeysValues(String path) {
@@ -110,10 +114,15 @@ public class Tools {
     }
 
     public static List<String[]> parseCsvRowOriented(String path, String delimiter) {
+        return parseCsvRowOriented(path, delimiter, "UTF8");
+    }
+
+    public static List<String[]> parseCsvRowOriented(String path, String delimiter, String encoding) {
         BufferedReader br = null;
         List<String[]> ret = new ArrayList<>();
         try {
-            br = new BufferedReader(new FileReader(path));
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(path), encoding);
+            br = new BufferedReader(isr);
             try {
                 String line = "";
                 while (line != null) {
@@ -149,7 +158,7 @@ public class Tools {
                     String line = br.readLine();
                     String[] split = line.split(";");
                     if (split.length == 2) {
-                        ret.put(split[0], split[1]);
+                        ret.put(removeQuotes(split[0]), removeQuotes(split[1]));
                     }
                 }
             } catch (NullPointerException e) {
@@ -362,14 +371,39 @@ public class Tools {
         printArray(array, true);
     }
 
+    public static void printArray(byte[] array) {
+        printArray(array, true);
+    }
+
     public static void printArray(float[] array, String separator, boolean newline, PrintStream ps) {
         for (int i = 0; i < array.length; i++) {
-            float val = array[i];
-            ps.print(val + separator);
+            ps.print(array[i] + separator);
         }
         if (newline) {
             ps.println();
         }
+    }
+
+    public static void printArray(long[] array, String separator, boolean newline, PrintStream ps) {
+        for (int i = 0; i < array.length; i++) {
+            ps.print(array[i] + separator);
+        }
+        if (newline) {
+            ps.println();
+        }
+    }
+
+    public static void printArray(byte[] array, String separator, boolean newline, PrintStream ps) {
+        for (int i = 0; i < array.length; i++) {
+            ps.print(array[i] + separator);
+        }
+        if (newline) {
+            ps.println();
+        }
+    }
+
+    public static void printArray(byte[] array, boolean newline) {
+        Tools.printArray(array, ";", newline, System.err);
     }
 
     public static void printArray(float[] array, boolean newline) {
@@ -426,49 +460,6 @@ public class Tools {
             ret.add(randomObject(objects));
         }
         return ret.toArray();
-    }
-
-    public static List<Integer> arrayToList(int[] values) {
-        List<Integer> ret = new ArrayList<>();
-        for (int i : values) {
-            ret.add(i);
-        }
-        return ret;
-    }
-
-    public static List<Object> arrayToList(Object[] values) {
-        List<Object> ret = new ArrayList<>();
-        for (Object i : values) {
-            if (i == null) {
-                String dsf = "";
-            }
-            ret.add(i);
-        }
-        return ret;
-    }
-
-    public static List<Float> arrayToList(float[] values) {
-        List<Float> ret = new ArrayList<>();
-        for (float i : values) {
-            ret.add(i);
-        }
-        return ret;
-    }
-
-    public static TreeSet<Object> arrayToSet(Object[] values) {
-        TreeSet<Object> ret = new TreeSet<>();
-        for (Object i : values) {
-            ret.add(i);
-        }
-        return ret;
-    }
-
-    public static List<String> arrayToList(String[] values) {
-        List<String> ret = new ArrayList<>();
-        for (String i : values) {
-            ret.add(i);
-        }
-        return ret;
     }
 
     public static void printMapValues(Map<Float, Integer> counts, boolean newLines) {
@@ -545,15 +536,15 @@ public class Tools {
         return ret;
     }
 
-    public static Object[] concatArrays(Object[] array1, Object obj) {
-        List<Object> list = new ArrayList<>();
+    public static <T> T[] addToArray(T[] array1, T obj) {
+        List<T> list = new ArrayList<>();
         list.addAll(Arrays.asList(array1));
         list.add(obj);
         return list.toArray(array1);
     }
 
-    public static Object[] concatArrays(Object obj, Object[] array1) {
-        List<Object> list = new ArrayList<>();
+    public static <T> T[] addToArray(T obj, T[] array1) {
+        List<T> list = new ArrayList<>();
         list.add(obj);
         list.addAll(Arrays.asList(array1));
         return list.toArray(array1);
@@ -634,16 +625,16 @@ public class Tools {
 
     public static final float[] get8Angles(float[] sixDists, boolean inDegress) {
         float[] ret = new float[8]; // beta1, delta2, gamma2, alphao, deltao, betaq, alphaq, gamma1
-        float[] angles = vm.math.Tools.evaluateAnglesOfTriangle(sixDists[0], sixDists[1], sixDists[4], inDegress); //a, b, e
+        float[] angles = vm.mathtools.Tools.evaluateAnglesOfTriangle(sixDists[0], sixDists[1], sixDists[4], inDegress); //a, b, e
         ret[0] = angles[1]; // beta1
         ret[3] = angles[0]; // delta2
-        angles = vm.math.Tools.evaluateAnglesOfTriangle(sixDists[1], sixDists[2], sixDists[5], inDegress); //b, c, f
+        angles = vm.mathtools.Tools.evaluateAnglesOfTriangle(sixDists[1], sixDists[2], sixDists[5], inDegress); //b, c, f
         ret[2] = angles[1]; // gamma2
         ret[5] = angles[0]; // betaq
-        angles = vm.math.Tools.evaluateAnglesOfTriangle(sixDists[2], sixDists[3], sixDists[4], inDegress); //c, d, e
+        angles = vm.mathtools.Tools.evaluateAnglesOfTriangle(sixDists[2], sixDists[3], sixDists[4], inDegress); //c, d, e
         ret[4] = angles[1]; // deltao
         ret[7] = angles[0]; // gamma1
-        angles = vm.math.Tools.evaluateAnglesOfTriangle(sixDists[3], sixDists[0], sixDists[5], inDegress); //d, a, f
+        angles = vm.mathtools.Tools.evaluateAnglesOfTriangle(sixDists[3], sixDists[0], sixDists[5], inDegress); //d, a, f
         ret[6] = angles[1]; // alphaq
         ret[1] = angles[0]; // delta2
         return ret;
@@ -683,21 +674,42 @@ public class Tools {
 
     }
 
-    public static class IntArraySameLengthsComparator implements Comparator<int[]>, Serializable {
-
-        private static final long serialVersionUID = 159756321810L;
-
-        @Override
-        public int compare(int[] o1, int[] o2) {
-            for (int i = 0; i < o1.length; i++) {
-                int ret = Integer.compare(o1[i], o2[i]);
-                if (ret != 0) {
-                    return ret;
-                }
-            }
-            return 0;
+    public static boolean isInArray(Object[] array, Object obj) {
+        if (obj == null) {
+            return false;
         }
+        for (Object objInArray : array) {
+            if (obj.equals(objInArray)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    public static <T> SortedSet<T> mergeMaps(String key, SortedMap<String, SortedSet<T>>... maps) {
+        SortedSet<T> ret = new TreeSet<>();
+        for (SortedMap<String, SortedSet<T>> map : maps) {
+            if (map.containsKey(key)) {
+                ret.addAll(map.get(key));
+            }
+        }
+        return ret;
+    }
+
+    public static <T> int getOccurencesOfKeyInMaps(String key, SortedMap<String, SortedSet<T>>... maps) {
+        int ret = 0;
+        for (SortedMap<String, SortedSet<T>> map : maps) {
+            if (map.containsKey(key)) {
+                ret++;
+            }
+        }
+        return ret;
+    }
+
+    public static <T1, T2> SortedMap<T1, T2> createSingletonMap(T1 key, T2 value) {
+        SortedMap<T1, T2> ret = new TreeMap<>();
+        ret.put(key, value);
+        return ret;
     }
 
     public static double[] getPrefixOfVector(double[] array, int finalDimensions) {
@@ -776,7 +788,7 @@ public class Tools {
         }
         for (int counter = 0; counter < maxCount && it.hasNext(); counter++) {
             ret.add(it.next());
-            if (ret.size() % 500000 == 0) {
+            if (ret.size() % 100000 == 0) {
                 System.gc();
                 float ram = vm.javatools.Tools.getRatioOfConsumedRam(true) * 100;
                 if (ram > memoryLimitInPercentages) {
@@ -817,6 +829,110 @@ public class Tools {
 
     public static short booleanToShort(boolean value, int shortTrue, int shortFalse) {
         return (short) (value ? shortTrue : shortFalse);
+
+    }
+
+    public static boolean isEmptyString(String string) {
+        return string == null || string.trim().equals("");
+    }
+
+    public static String removeQuotes(String string) {
+        if (string == null) {
+            return null;
+        }
+        string = string.trim();
+        if (string.startsWith("\"") && string.endsWith("\"")) {
+            return string.substring(1, string.length() - 1);
+        }
+        return string.trim();
+    }
+
+    public static Float parseFloat(String string) {
+        try {
+            string = Tools.removeQuotes(string);
+            if (string == null || string.isBlank() || string.toLowerCase().equals("nan") || string.endsWith("D")) {
+                return null;
+            }
+            return Float.valueOf(string);
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    public static boolean isParseableToFloats(Object[] array) {
+        if (array == null) {
+            return false;
+        }
+        for (Object o : array) {
+            if (o == null) {
+                return false;
+            }
+            Float floatValue = parseFloat(o);
+            if (floatValue == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isParseableToIntegers(Object[] array) {
+        if (array == null) {
+            return false;
+        }
+        for (Object o : array) {
+            Integer iValue = parseInteger(o);
+            if (iValue == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static Float parseFloat(Object object) {
+        return parseFloat(object.toString());
+    }
+
+    public static BufferedImage loadImageFromUrl(URL url) throws MalformedURLException, IOException {
+        return ImageIO.read(url);
+    }
+
+    public static boolean storeImage(BufferedImage image, File destFile) throws IOException {
+        LOG.log(Level.INFO, "Storing image ({0} x {1}) to file {2}", new Object[]{image.getWidth(), image.getHeight(), destFile.getCanonicalPath()});
+        return ImageIO.write(image, "png", destFile);
+    }
+
+    public static boolean storeImage(BufferedImage image, String path) throws IOException {
+        File outputfile = new File(path);
+        return storeImage(image, outputfile);
+    }
+
+    public static class IntArraySameLengthsComparator implements Comparator<int[]>, Serializable {
+
+        private static final long serialVersionUID = 159756321810L;
+
+        @Override
+        public int compare(int[] o1, int[] o2) {
+            for (int i = 0; i < o1.length; i++) {
+                int ret = Integer.compare(o1[i], o2[i]);
+                if (ret != 0) {
+                    return ret;
+                }
+            }
+            return 0;
+        }
+
+    }
+
+    public static class MapByFloatArrayValueComparator<T extends Comparable> implements Comparator<Map.Entry<T, float[]>> {
+
+        private Comparator<float[]> comparator = new Tools.FloatArraySameLengthsComparator();
+
+        @Override
+        public int compare(Map.Entry<T, float[]> o1, Map.Entry<T, float[]> o2) {
+            float[] val1 = o1.getValue();
+            float[] val2 = o2.getValue();
+            return comparator.compare(val1, val2);
+        }
 
     }
 
@@ -893,7 +1009,7 @@ public class Tools {
         }
     }
 
-    public static class FloatVectorComparator implements Comparator<float[]> {
+    public static class FloatArraySameLengthsComparator implements Comparator<float[]> {
 
         @Override
         public int compare(float[] o1, float[] o2) {
@@ -914,76 +1030,37 @@ public class Tools {
 
         @Override
         public int compare(Object[] o1, Object[] o2) {
-            if ((o1 == null && o2 != null) || (o1 != null && o2 == null)) {
+            if (o1 == null && o2 != null) {
                 return -1;
+            }
+            if (o1 != null && o2 == null) {
+                return 1;
             }
             if (o1 == null && o2 == null) {
                 return 0;
             }
             if (o1.length != o2.length) {
-                return -1;
+                return Integer.compare(o1.length, o2.length);
             }
             for (int i = 0; i < o1.length; i++) {
                 Object oi1 = o1[i];
                 Object oi2 = o2[i];
-                if (!oi1.equals(oi2)) {
+                if (oi1 == null && oi2 != null) {
+                    return 1;
+                }
+                if (oi2 == null && oi1 != null) {
                     return -1;
+                }
+                if (oi1 == null && oi2 == null) {
+                    continue;
+                }
+                if (!oi1.equals(oi2)) {
+                    return Integer.compare(oi1.hashCode(), oi2.hashCode());
                 }
             }
             return 0;
         }
 
-    }
-
-    public static boolean isEmptyString(String string) {
-        return string == null || string.trim().equals("");
-    }
-
-    public static String removeQuotes(String string) {
-        if (string == null) {
-            return null;
-        }
-        string = string.trim();
-        if (string.startsWith("\"") && string.endsWith("\"")) {
-            return string.substring(1, string.length() - 1);
-        }
-        return string;
-    }
-
-    public static Float parseFloat(String string) {
-        try {
-            string = Tools.removeQuotes(string);
-            if (string == null || string.isBlank() || string.toLowerCase().equals("nan") || string.endsWith("D")) {
-                return null;
-            }
-            return Float.valueOf(string);
-        } catch (Exception e) {
-        }
-        return null;
-    }
-
-    public static boolean isParseableToFloats(Object[] array) {
-        for (Object o : array) {
-            Float floatValue = parseFloat(o);
-            if (floatValue == null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean isParseableToIntegers(Object[] array) {
-        for (Object o : array) {
-            Integer iValue = parseInteger(o);
-            if (iValue == null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static Float parseFloat(Object object) {
-        return parseFloat(object.toString());
     }
 
 }

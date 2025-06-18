@@ -7,6 +7,7 @@ package vm.metricSpace;
 import java.util.Map;
 
 /**
+ * Currently used for vectors of random numbers
  *
  * @author Vlada
  * @param <T> type of data used to compute the distance
@@ -55,6 +56,16 @@ public class SimpleDatasetImpl<T> extends Dataset<T> {
     @Override
     public String getPivotSetName() {
         return pivotsetName;
+    }
+
+    @Override
+    public boolean shouldStoreDistsToPivots() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldCreateKeyValueStorage() {
+        return false;
     }
 
 }
