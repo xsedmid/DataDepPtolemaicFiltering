@@ -1,5 +1,5 @@
 # DataDepPtolemaicFiltering
-The objective of this repository is to reproduce the experiments of the "Data-Dependent Ptolemaic Filtering for High-Dimensional Vector Databases" paper.
+The objective of this repository is to reproduce the experiments of the "Data-dependent Ptolemaic Filtering for High-Dimensional Streaming Data" paper.
 
 ## Reproducibility Steps
 
@@ -43,8 +43,8 @@ The objective of this repository is to reproduce the experiments of the "Data-De
 * 1M DeCAF 4,096-D vectors: Queries: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Query/decaf_1m.gz) (~7 MB)
 * 1M DeCAF 4,096-D vectors: Pivots: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Pivot/decaf_1m.gz) (~17 MB)
 
-* 17K PKU-MMD_10fps MoCAP data: please reach out to us at v.mic11111@gmail.com. The data cannot be provided online due to copyright.
-* 17K PKU-MMD_30fps MoCAP data: please reach out to us at v.mic11111@gmail.com. The data cannot be provided online due to copyright.
+* 17K PKU-MMD_10fps MoCAP data: The original PKU-MMD dataset can be downloaded here: https://www.icst.pku.edu.cn/struct/Projects/PKUMMD.html . The downloaded skeleton data should be additionally pre-processed to normalize the skeleton position, orientation, and size (our pre-processing scripts can be obtained by contacting us at: v.mic11111@gmail.com).
+* 17K PKU-MMD_30fps MoCAP data: The original PKU-MMD dataset can be downloaded here: https://www.icst.pku.edu.cn/struct/Projects/PKUMMD.html . The downloaded skeleton data should be additionally pre-processed to normalize the skeleton position, orientation, and size (our pre-processing scripts can be obtained by contacting us at: v.mic11111@gmail.com).
 <!--* 96M Yahoo 4,096-D vectors: [download](https://disa.fi.muni.cz/~xmic/DataDepPtolemaicFiltering/Similarity_search/Dataset/Dataset/decaf_100m.gz) (~559 GB)--> 
 
 <!--## Key-value Storages
